@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>three.js webgl - loaders - Clara.io JSON loader</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <style>
+    body {
+      font-family: Monospace;
+      color: #fff;
+      margin: 0px;
+      overflow: hidden;
+    }
+
+    .controls__color-palette {
+      margin: 10px;
+    }
+
+    .controls__color-palette-item {
+      min-width: 34px;
+      min-height: 4em;
+      border-radius: 2px;
+      cursor: pointer;
+      margin: 4px;
+    }
+
+    .rc-color-picker-wrap {
+      display: inline-block;
+      margin: 10px;
+    }
+
+    .controls__color-current .rc-color-picker-trigger {
+      min-height: 4em;
+      border: 0;
+      box-shadow: none;
+      padding: 0;
+    }
+     .controls-logo-gallery img {
+       width: 100%;
+     }
+
+     .logo-item {
+       border: solid 1px #1b1b1b;
+     }
+
+    #info a, .button {
+      color: #f00;
+      font-weight: bold;
+      text-decoration: underline;
+      cursor: pointer
+    }
+  </style>
+  <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <div id="car" class="col-md-8" style="height: 800px"></div>
+    <div class="col-md-4">
+      <div class="row">
+        <div class="controls__color-current col-md-2">
+          <div class="row">
+            <div class="controls__stitle col-md-12">Current</div>
+            <div class="rc-color-picker-wrap col-md-12">
+              <div class="rc-color-picker-trigger " unselectable="true" style="opacity: 1; background-color: rgb(255, 0, 0);"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls__color-standard col-md-10">
+          <div class="controls__stitle">Standard Colors</div>
+          <div class="controls__color-palette">
+            <div class="row">
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(246, 25, 34); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(36, 141, 252); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(41, 183, 132); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(252, 116, 6); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(240, 198, 0); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(16, 16, 17); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(214, 207, 191); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(184, 182, 193); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(108, 108, 108); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(17, 103, 152); height: 4em;"></div>
+            </div>
+          </div>
+
+          <div class="controls-logo-gallery col-md-12">
+            <div class="row">
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+
+  <script src="node_modules/three/build/three.js"></script>
+  <script src="three.js/examples/js/geometries/DecalGeometry.js"></script>
+
+  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="node_modules/jquery/dist/jquery.js"></script>
+
+
+  <script>
+    var isOnCanvas = false; // Is the mouse pointer on the canvas
+    var mouseDown = false; // Is the mouse clicked
+    var file = "car_a.json"; // The Json file to change the car
+    var container = $('#car'); // The div container including the car
+
+    // Mouse pointer in container event
+    container.mouseenter(function () {
+      isOnCanvas = true;
+    });
+
+    //Mouse pointer has left container event
+    container.mouseleave(function () {
+      isOnCanvas = false;
+    });
+
+    //Is mouse left button down or not
+    container.mousedown(function () {
+      mouseDown = true;
+    }).mouseup(function () {
+      mouseDown = false;
+    });
+
+    var mouse = new THREE.Vector2();
+    var INTERSECTED, SELECTED, SELECTED_ORIGINAL_STATE;
+    var raycaster = new THREE.Raycaster();
+    var camera, scene, renderer;
+    var mouseX = 0, mouseY = 0;
+    var car; // car object
+    var car_color; // Car color
+    var selected_image = null;
+    var logos = [
+        'fox-light-colors.png',
+        'rc_logo.png',
+        'Motul_logo.png'
+    ];
+    var intersection = {
+      point: new THREE.Vector3()
+    };
+
+    // A Color on the color pallette is clicked
+    $('.controls__color-palette-item').click(function () {
+      var selected_color = $(this).css('background-color');
+      // set the current color to the color clicked
+      $('.rc-color-picker-trigger').css('background-color', selected_color);
+      // change the car color variable
+      car_color = new THREE.Color(selected_color);
+      // remove the existing car
+      scene.remove(car);
+      // LoadObject with new car
+      loadObject();
+
+    });
+
+
+    $('.controls-logo-gallery').on('click', '.logo-item' , function(){
+      console.log('image')
+      selected_image = $(this).find('img').attr("src");
+      $(this).css('border-color', 'blue');
+
+
+
+
+    });
+
+    //init();
+    window.addEventListener( 'load', init );
+    animate();
+
+    function loadImages() {
+      var folder = "logo-images/";
+      var dafault_img = "default/ico_noimage.png";
+      $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item default"> <img  src="'+ folder + dafault_img +'"></div>');
+      for (var i in logos) {
+        $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item"> <img  src="'+ folder + logos[i] +'"></div>');
+      }
+    }
+
+    function loadObject() {
+      // Using the three oBjectLOader to load the 3d json file
+      var objectLoader = new THREE.ObjectLoader();
+      objectLoader.load(file, function (obj) {
+        for (i in obj.children) {
+          if (obj.children[i].material.color !== undefined) {
+              obj.children[i].material.color = car_color;
+          }
+        }
+        car = obj;
+        scene.add(car);
+      });
+    }
+
+    // the initialize function
+    function init() {
+      // Set the camera
+      camera = new THREE.PerspectiveCamera(70, container.width() / container.height(), 0.1, 500);
+      camera.position.x = -160;
+      camera.position.y = 95;
+      camera.position.z = 0;
+
+      scene = new THREE.Scene();
+      car_color = new THREE.Color('rgb(41, 183, 132)');
+      // Add light //
+      var ambient = new THREE.AmbientLight(0x050505);
+      scene.add(ambient);
+
+      directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+      directionalLight.position.set(2, 1.2, 10).normalize();
+      scene.add(directionalLight);
+
+      directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight.position.set(-2, 1.2, -10).normalize();
+      scene.add(directionalLight);
+
+      pointLight = new THREE.PointLight(0xffaa00, 2);
+      pointLight.position.set(2000, 1200, 10000);
+      scene.add(pointLight);
+      // End of Add light //
+
+      // Loading the object (not rendered yet)
+      loadObject();
+
+      // The renderer
+      renderer = new THREE.WebGLRenderer();
+      //renderer.setPixelRatio( window.devicePixelRatio );
+      renderer.setSize(container.width(), container.height());
+
+      // Add the renderer to the container
+      container.append($(renderer.domElement));
+      //      camera.lookAt( scene.position );
+      //      renderer.render( scene, camera );
+      //A event listner to mouse movements
+      document.addEventListener('mousemove', onDocumentMouseMove, false);
+      document.addEventListener('mousedown', onDocumentMouseDown, false);
+      //      window.addEventListener( 'resize', onWindowResize, false );
+      loadImages();
+    }
+
+    //    function onWindowResize() {
+    //      windowHalfX = window.innerWidth / 2;
+    //      windowHalfY = window.innerHeight / 2;
+    //      camera.aspect = window.innerWidth / window.innerHeight;
+    //      camera.updateProjectionMatrix();
+    //      renderer.setSize( window.innerWidth, window.innerHeight );
+    //
+    //    }
+
+    function onDocumentMouseMove(event) {
+      //      mouseX = ( event.clientX - windowHalfX ) / 2;
+      //      mouseY = ( event.clientY - windowHalfY ) / 2;
+
+      if (isOnCanvas && mouseDown) {
+        mouseX = (event.clientX / window.innerWidth) * (container.width() / 20);
+        mouseY = (event.clientY / window.innerHeight) * (container.height() / 40);
+      }
+
+      //      mouse.x = (event.clientX / container.width()) ;
+      //      mouse.y = (event.clientY / container.height()) ;
+      if (!mouseDown) {
+        mouse.x = ( event.clientX / container.width() ) * 2 - 1;
+        mouse.y = -( event.clientY / container.height() ) * 2 + 1;
+      }
+    }
+
+    function onDocumentMouseDown(event) {
+
+      var vector = new THREE.Vector3(( event.clientX / container.width() ) * 2 - 1, -( event.clientY / container.height() ) * 2 + 1, 0.5);
+      vector = vector.unproject(camera);
+
+      var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+
+      var intersects = raycaster.intersectObjects(scene.children[4].children, true);
+
+      if (intersects.length > 0) {
+        if (SELECTED !== intersects[0].object && intersects[0].object.material.color !== undefined) {
+//          if (SELECTED) {
+//            SELECTED_ORIGINAL_STATE.material.transparent = false;
+//            SELECTED_ORIGINAL_STATE.material.opacity = 1;
+//          }
+          var p = intersects[0].point;
+          intersection.point.copy( p );
+          SELECTED = intersects[0].object;
+          SELECTED_ORIGINAL_STATE = SELECTED;
+        }
+      }
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      //      car.rotation.x += 0.01;
+
+      car.rotation.y = mouseX;
+
+      //car.rotation.x = mouseY;
+      render();
+
+    }
+
+    function render() {
+      //      camera.position.x += ( mouseX - camera.position.x ) * .05;
+      //      camera.position.y += ( - mouseY - camera.position.y ) * .05;
+
+      //      console.log(camera.position);
+      camera.lookAt(scene.position);
+
+      raycaster.setFromCamera(mouse, camera);
+      if (!mouseDown) {
+        var intersects = raycaster.intersectObjects(scene.children[4].children, true);
+        if (intersects.length > 0) {
+          if (INTERSECTED !== intersects[0].object && intersects[0].object.material.color !== undefined) {
+            if (INTERSECTED) {
+              INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+            }
+            INTERSECTED = intersects[0].object;
+            INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+            INTERSECTED.material.emissive.setHex(0xff0000);
+          }
+        } else {
+          if (INTERSECTED) {
+            INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+          }
+          INTERSECTED = null;
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+  </script>
+
+</body>
+</html>
