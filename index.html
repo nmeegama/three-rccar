@@ -100,6 +100,7 @@
 
 
   <script src="node_modules/three/build/three.js"></script>
+  <script src="three.js/examples/js/controls/OrbitControls.js"></script>
   <script src="three.js/examples/js/geometries/DecalGeometry.js"></script>
 
   <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
@@ -165,10 +166,6 @@
       console.log('image')
       selected_image = $(this).find('img').attr("src");
       $(this).css('border-color', 'blue');
-
-
-
-
     });
 
     //init();
@@ -188,6 +185,7 @@
       // Using the three oBjectLOader to load the 3d json file
       var objectLoader = new THREE.ObjectLoader();
       objectLoader.load(file, function (obj) {
+        console.log(obj.children);
         for (i in obj.children) {
           if (obj.children[i].material.color !== undefined) {
               obj.children[i].material.color = car_color;
@@ -232,6 +230,9 @@
       renderer = new THREE.WebGLRenderer();
       //renderer.setPixelRatio( window.devicePixelRatio );
       renderer.setSize(container.width(), container.height());
+      // CONTROLS
+      cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+      cameraControls.addEventListener( 'change', render );
 
       // Add the renderer to the container
       container.append($(renderer.domElement));
@@ -257,13 +258,13 @@
       //      mouseX = ( event.clientX - windowHalfX ) / 2;
       //      mouseY = ( event.clientY - windowHalfY ) / 2;
 
-      if (isOnCanvas && mouseDown) {
-        mouseX = (event.clientX / window.innerWidth) * (container.width() / 20);
-        mouseY = (event.clientY / window.innerHeight) * (container.height() / 40);
-      }
-
-      //      mouse.x = (event.clientX / container.width()) ;
-      //      mouse.y = (event.clientY / container.height()) ;
+//      if (isOnCanvas && mouseDown) {
+//        mouseX = (event.clientX / window.innerWidth) * (container.width() / 120);
+//        mouseY = (event.clientY / window.innerHeight) * (container.height() / 120);
+//      }
+//
+//      //      mouse.x = (event.clientX / container.width()) ;
+//      //      mouse.y = (event.clientY / container.height()) ;
       if (!mouseDown) {
         mouse.x = ( event.clientX / container.width() ) * 2 - 1;
         mouse.y = -( event.clientY / container.height() ) * 2 + 1;
@@ -297,7 +298,7 @@
       requestAnimationFrame(animate);
       //      car.rotation.x += 0.01;
 
-      car.rotation.y = mouseX;
+//      car.rotation.y = mouseX;
 
       //car.rotation.x = mouseY;
       render();
