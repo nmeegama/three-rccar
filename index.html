@@ -35,13 +35,14 @@
       box-shadow: none;
       padding: 0;
     }
-     .controls-logo-gallery img {
-       width: 100%;
-     }
 
-     .logo-item {
-       border: solid 1px #1b1b1b;
-     }
+    .controls-logo-gallery img {
+      width: 100%;
+    }
+
+    .logo-item {
+      border: solid 1px #1b1b1b;
+    }
 
     #info a, .button {
       color: #f00;
@@ -141,25 +142,25 @@
     var car_color; // Car color
     var selected_image = null;
     var logos = [
-        'fox-light-colors.png',
-        'rc_logo.png',
-        'Motul_logo.png'
+      'fox-light-colors.png',
+      'rc_logo.png',
+      'Motul_logo.png'
     ];
-//    var intersection = {
-//      point: new THREE.Vector3()
-//    };
+    //    var intersection = {
+    //      point: new THREE.Vector3()
+    //    };
     var intersection = {
       intersects: false,
       point: new THREE.Vector3(),
       normal: new THREE.Vector3()
     };
 
-
     var position = new THREE.Vector3();
     var orientation = new THREE.Euler();
     var decals = [];
+    var added_logos = {};
     var mouseHelper;
-    var size = new THREE.Vector3( 10, 10, 10 );
+    var size = new THREE.Vector3(10, 10, 10);
 
     var params = {
       minScale: 10,
@@ -186,25 +187,28 @@
 
     });
 
-
-    $('.controls-logo-gallery').on('click', '.logo-item' , function(){
-     // console.log('image')
+    // Click function for logos
+    $('.controls-logo-gallery').on('click', '.logo-item', function () {
+      // console.log('image')
       selected_image = $(this).find('img').attr("src");
+      if (selected_image.toString().indexOf('ico_noimage.png') != -1) {
+        selected_image = null;
+      }
       $(this).css('border-color', 'blue');
       scene.remove(car);
       loadObject();
     });
 
-    //init();
-    window.addEventListener( 'load', init );
+    window.addEventListener('load', init);
     animate();
 
+    // Load all logos
     function loadImages() {
       var folder = "logo-images/";
       var dafault_img = "default/ico_noimage.png";
-      $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item default"> <img  src="'+ folder + dafault_img +'"></div>');
+      $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item default"> <img  src="' + folder + dafault_img + '"></div>');
       for (var i in logos) {
-        $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item"> <img  src="'+ folder + logos[i] +'"></div>');
+        $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item"> <img  src="' + folder + logos[i] + '"></div>');
       }
     }
 
@@ -214,59 +218,72 @@
       var objectLoader = new THREE.ObjectLoader();
       objectLoader.load(file, function (obj) {
         mesh = obj;
-        console.log(obj);
         for (i in obj.children) {
           if (obj.children[i].material.color !== undefined) {
             obj.children[i].material.color = car_color;
           }
 
           if (selected_image !== null && SELECTED && SELECTED.uuid == obj.children[i].uuid) {
-            console.log(selected_image);
-            var textureLoader = new THREE.TextureLoader();
-            var decalDiffuse = textureLoader.load( selected_image );
-            var decalNormal = textureLoader.load( selected_image );
+            var texture = new THREE.TextureLoader().load(selected_image);
+            material = new THREE.MeshPhongMaterial({
+              map: texture,
+              transparent: true
+            });
 
+            //
             position.copy(intersection.point);
             orientation.copy(mouseHelper.rotation);
-            if (params.rotate) orientation.z = Math.random() * 2 * Math.PI;
-
+            //            if (params.rotate) orientation.z = Math.random() * 2 * Math.PI;
+            //
             var scale = params.minScale + Math.random() * ( params.maxScale - params.minScale );
             size.set(scale, scale, scale);
-            var decalMaterial = new THREE.MeshPhongMaterial( {
-              specular: 0x444444,
-              map: decalDiffuse,
-              normalMap: decalNormal,
-              normalScale: new THREE.Vector2( 1, 1 ),
-              shininess: 30,
-              transparent: false,
-              depthTest: true,
-              depthWrite: false,
-              polygonOffset: true,
-              polygonOffsetFactor: - 4,
-              wireframe: false
-            } );
-            var material = decalMaterial.clone();
-
-            //obj.children[i].material = material;
-            //obj.children[i].material.color = car_color;
-            console.log(car.children[i]);
-            var geometry = new THREE.DecalGeometry(car.children[i], position, orientation, size);
+            //
+            //
+            var geometry = new THREE.DecalGeometry(obj.children[i], position, orientation, size);
             var m = new THREE.Mesh(geometry, material);
-            //obj.children[i] = m;
-            //car = obj;
-            //scene.add(car);
-            decals.push(m);
-            scene.add(m);
 
-          } else {
+            scene.add(m);
+            addLogos(obj.children[i].uuid, m.uuid);
+            console.log(added_logos);
+
+          } else if (selected_image === null && SELECTED && SELECTED.uuid == obj.children[i].uuid) {
+            removeLogo(obj.children[i].uuid);
+          }
+          else {
             car = obj;
             scene.add(car);
           }
 
-
         }
 
       });
+    }
+
+    function addLogos(component_uuid, logo_uuid) {
+      if (added_logos[component_uuid] !== undefined) {
+        added_logos[component_uuid].push(logo_uuid);
+      } else {
+        added_logos[component_uuid] = [];
+        added_logos[component_uuid].push(logo_uuid);
+      }
+    }
+
+    function removeLogo(component_uuid) {
+      for (i in added_logos) {
+        if (i == component_uuid) {
+          for (l in added_logos[i]) {
+            console.log(added_logos[i][l]);
+            for (c in scene.children) {
+              if (scene.children[c].uuid == added_logos[i][l]) {
+                scene.remove(scene.children[c]);
+              }
+            }
+
+          }
+
+        }
+      }
+
     }
 
     // the initialize function
@@ -274,56 +291,51 @@
 
       // The renderer
       renderer = new THREE.WebGLRenderer();
-      renderer.setPixelRatio( window.devicePixelRatio );
+      renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(container.width(), container.height());
       // Add the renderer to the container
       container.append($(renderer.domElement));
       scene = new THREE.Scene();
 
       // Set the camera
-      camera = new THREE.PerspectiveCamera(70, container.width() / container.height(), 0.1, 500 );
+      camera = new THREE.PerspectiveCamera(70, container.width() / container.height(), 0.1, 500);
       camera.position.x = -160;
       camera.position.y = 95;
       camera.position.z = 0;
       camera.target = new THREE.Vector3();
 
-      var controls = new THREE.OrbitControls( camera, renderer.domElement );
+      var controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.minDistance = 50;
       controls.maxDistance = 200;
 
-
-
-
       car_color = new THREE.Color('rgb(41, 183, 132)');
       // Add light //
-      scene.add( new THREE.AmbientLight( 0x443333 ) );
+      scene.add(new THREE.AmbientLight(0x443333));
 
-      var light = new THREE.DirectionalLight( 0xffddcc, 1 );
-      light.position.set( 1, 0.75, 0.5 );
-      scene.add( light );
+      var light = new THREE.DirectionalLight(0xffddcc, 1);
+      light.position.set(1, 0.75, 0.5);
+      scene.add(light);
 
-      var light = new THREE.DirectionalLight( 0xccccff, 1 );
-      light.position.set( - 1, 0.75, - 0.5 );
-      scene.add( light );
+      var light = new THREE.DirectionalLight(0xccccff, 1);
+      light.position.set(-1, 0.75, -0.5);
+      scene.add(light);
 
       var geometry = new THREE.BufferGeometry();
-      geometry.setFromPoints( [ new THREE.Vector3(), new THREE.Vector3() ] );
+      geometry.setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
 
-      line = new THREE.Line( geometry, new THREE.LineBasicMaterial() );
-      scene.add( line );
+      line = new THREE.Line(geometry, new THREE.LineBasicMaterial());
+      scene.add(line);
 
       // Loading the object (not rendered yet)
       loadObject();
       raycaster = new THREE.Raycaster();
-      mouseHelper = new THREE.Mesh( new THREE.BoxBufferGeometry( 1, 1, 10 ), new THREE.MeshNormalMaterial() );
+      mouseHelper = new THREE.Mesh(new THREE.BoxBufferGeometry(1, 1, 10), new THREE.MeshNormalMaterial());
       mouseHelper.visible = true;
-      scene.add( mouseHelper );
-
+      scene.add(mouseHelper);
 
       // CONTROLS
-      cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
-      cameraControls.addEventListener( 'change', render );
-
+      //      cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+      //      cameraControls.addEventListener( 'change', render );
 
       //      camera.lookAt( scene.position );
       //      renderer.render( scene, camera );
@@ -331,22 +343,21 @@
       document.addEventListener('mousemove', onDocumentMouseMove, false);
       document.addEventListener('mousedown', onDocumentMouseDown, false);
       //      window.addEventListener( 'resize', onWindowResize, false );
+      // Call to load logos
       loadImages();
     }
-
-
 
     function onDocumentMouseMove(event) {
       //      mouseX = ( event.clientX - windowHalfX ) / 2;
       //      mouseY = ( event.clientY - windowHalfY ) / 2;
 
-//      if (isOnCanvas && mouseDown) {
-//        mouseX = (event.clientX / window.innerWidth) * (container.width() / 120);
-//        mouseY = (event.clientY / window.innerHeight) * (container.height() / 120);
-//      }
-//
-//      //      mouse.x = (event.clientX / container.width()) ;
-//      //      mouse.y = (event.clientY / container.height()) ;
+      //      if (isOnCanvas && mouseDown) {
+      //        mouseX = (event.clientX / window.innerWidth) * (container.width() / 120);
+      //        mouseY = (event.clientY / window.innerHeight) * (container.height() / 120);
+      //      }
+      //
+      //      //      mouse.x = (event.clientX / container.width()) ;
+      //      //      mouse.y = (event.clientY / container.height()) ;
       if (!mouseDown) {
         mouse.x = ( event.clientX / container.width() ) * 2 - 1;
         mouse.y = -( event.clientY / container.height() ) * 2 + 1;
@@ -364,36 +375,36 @@
 
       if (intersects.length > 0) {
         if (SELECTED !== intersects[0].object && intersects[0].object.material.color !== undefined) {
-//          if (SELECTED) {
-//            SELECTED_ORIGINAL_STATE.material.transparent = false;
-//            SELECTED_ORIGINAL_STATE.material.opacity = 1;
-//          }
+          //          if (SELECTED) {
+          //            SELECTED_ORIGINAL_STATE.material.transparent = false;
+          //            SELECTED_ORIGINAL_STATE.material.opacity = 1;
+          //          }
           var p = intersects[0].point;
-          intersection.point.copy( p );
+          intersection.point.copy(p);
           SELECTED = intersects[0].object;
           SELECTED_ORIGINAL_STATE = SELECTED;
 
-          mouseHelper.position.copy( p );
-          intersection.point.copy( p );
-          var n = intersects[ 0 ].face.normal.clone();
-          n.transformDirection( SELECTED.matrixWorld );
-          n.multiplyScalar( 10 );
-          n.add( intersects[ 0 ].point );
-          intersection.normal.copy( intersects[ 0 ].face.normal );
-          mouseHelper.lookAt( n );
+          mouseHelper.position.copy(p);
+          intersection.point.copy(p);
+          var n = intersects[0].face.normal.clone();
+          n.transformDirection(SELECTED.matrixWorld);
+          n.multiplyScalar(10);
+          n.add(intersects[0].point);
+          intersection.normal.copy(intersects[0].face.normal);
+          mouseHelper.lookAt(n);
         }
       }
 
-      console.log(SELECTED);
     }
 
     function animate() {
       requestAnimationFrame(animate);
       //      car.rotation.x += 0.01;
 
-//      car.rotation.y = mouseX;
+      //      car.rotation.y = mouseX;
 
       //car.rotation.x = mouseY;
+
       render();
 
     }
@@ -403,16 +414,17 @@
       //      camera.position.y += ( - mouseY - camera.position.y ) * .05;
 
       //      console.log(camera.position);
-      if(!car) return;
+      if (!car) return;
+      if (camera.position.y < 0) {
+        camera.position.y = 0;
+      }
       camera.lookAt(scene.position);
 
       raycaster.setFromCamera(mouse, camera);
-     // console.log(scene.children);
+      // console.log(scene.children);
       if (!mouseDown) {
         var intersects = raycaster.intersectObjects(car.children, true);
         if (intersects.length > 0) {
-
-
 
           if (INTERSECTED !== intersects[0].object && intersects[0].object.material.color !== undefined) {
             if (INTERSECTED) {
