@@ -57,9 +57,25 @@
 <body>
 <div class="container-fluid">
   <div class="row">
+    <div class="col-md-12">
+    <nav class="nav nav-pills nav-justified">
+      <a class="nav-item nav-link active" href="index.html">Car A</a>
+      <a class="nav-item nav-link" href="car_c.html">Car C</a>
+      <a class="nav-item nav-link" href="car_e.html">Car E</a>
+      <a class="nav-item nav-link" href="car_f.html">Car F</a>
+      <a class="nav-item nav-link" href="car_g.html">Car G</a>
+      <a class="nav-item nav-link" href="car_i.html">Car I</a>
+    </nav>
+    </div>
+
+  </div>
+  <div class="row">
     <div id="car" class="col-md-8" style="height: 800px"></div>
     <div class="col-md-4">
       <div class="row">
+        <div class="col-md-12">
+          <button onclick="exportCollada()">Export COLLADA</button>
+        </div>
         <div class="controls__color-current col-md-2">
           <div class="row">
             <div class="controls__stitle col-md-12">Current</div>
@@ -102,6 +118,7 @@
 
   <script src="node_modules/three/build/three.js"></script>
   <script src="three.js/examples/js/controls/OrbitControls.js"></script>
+  <script src="three.js/examples/js/exporters/ColladaExporter.js"></script>
   <script src="three.js/examples/js/geometries/DecalGeometry.js"></script>
   <script src="three.js/examples/js/loaders/GLTFLoader.js"></script>
 
@@ -113,7 +130,7 @@
   <script>
     var isOnCanvas = false; // Is the mouse pointer on the canvas
     var mouseDown = false; // Is the mouse clicked
-    var file = "car_a.json"; // The Json file to change the car
+    var file = "cars/Model_A.json"; // The Json file to change the car
     var container = $('#car'); // The div container including the car
 
     // Mouse pointer in container event
@@ -163,8 +180,8 @@
     var size = new THREE.Vector3(10, 10, 10);
 
     var params = {
-      minScale: 10,
-      maxScale: 20,
+      minScale: 1.5,
+      maxScale: 4,
       rotate: true,
       clear: function () {
 
@@ -298,8 +315,8 @@
       scene = new THREE.Scene();
 
       // Set the camera
-      camera = new THREE.PerspectiveCamera(70, container.width() / container.height(), 0.1, 500);
-      camera.position.x = -160;
+      camera = new THREE.PerspectiveCamera(20, container.width() / container.height(), 0.1, 500);
+      camera.position.x = 0;
       camera.position.y = 95;
       camera.position.z = 0;
       camera.target = new THREE.Vector3();
@@ -329,7 +346,7 @@
       // Loading the object (not rendered yet)
       loadObject();
       raycaster = new THREE.Raycaster();
-      mouseHelper = new THREE.Mesh(new THREE.BoxBufferGeometry(1, 1, 10), new THREE.MeshNormalMaterial());
+      mouseHelper = new THREE.Mesh(new THREE.BoxBufferGeometry(0.25, 0.25, 1), new THREE.MeshNormalMaterial());
       mouseHelper.visible = true;
       scene.add(mouseHelper);
 
@@ -444,6 +461,34 @@
 
       renderer.render(scene, camera);
     }
+
+
+    var exporter = new THREE.ColladaExporter();
+    function exportCollada() {
+      var result = exporter.parse( car );
+
+      saveString( result.data, 'myfile.dae' );
+      result.textures.forEach( tex => {
+        saveArrayBuffer( tex.data, `${ tex.name }.${ tex.ext }` );
+    });
+    }
+
+    function save( blob, filename ) {
+      link.href = URL.createObjectURL( blob );
+      link.download = filename;
+      link.click();
+    }
+    function saveString( text, filename ) {
+      save( new Blob( [ text ], { type: 'text/plain' } ), filename );
+    }
+    function saveArrayBuffer( buffer, filename ) {
+      save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
+    }
+
+    var link = document.createElement( 'a' );
+    link.style.display = 'none';
+    document.body.appendChild( link );
+
   </script>
 
 </body>
