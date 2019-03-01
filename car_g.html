@@ -312,10 +312,10 @@
       scene = new THREE.Scene();
 
       // Set the camera
-      camera = new THREE.PerspectiveCamera(20, container.width() / container.height(), 0.1, 500);
-      camera.position.x = 0;
-      camera.position.y = 95;
-      camera.position.z = 0;
+      camera = new THREE.PerspectiveCamera(1000, container.width() / container.height(), 0.1, 500);
+      camera.position.x = -100;
+      camera.position.y = 500;
+      camera.position.z = 200;
       camera.target = new THREE.Vector3();
 
       var controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -429,9 +429,9 @@
 
       //      console.log(camera.position);
       if (!car) return;
-      if (camera.position.y < 0) {
-        camera.position.y = 0;
-      }
+//      if (camera.position.y < 0) {
+//        camera.position.y = 0;
+//      }
       camera.lookAt(scene.position);
 
       raycaster.setFromCamera(mouse, camera);

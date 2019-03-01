@@ -313,9 +313,9 @@
 
       // Set the camera
       camera = new THREE.PerspectiveCamera(20, container.width() / container.height(), 0.1, 500);
-      camera.position.x = 0;
+      camera.position.x = -100;
       camera.position.y = 95;
-      camera.position.z = 0;
+      camera.position.z = 100;
       camera.target = new THREE.Vector3();
 
       var controls = new THREE.OrbitControls(camera, renderer.domElement);
