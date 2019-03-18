@@ -443,7 +443,7 @@
         var intersects = raycaster.intersectObjects(car.children, true);
         if (intersects.length > 0) {
 
-          if (INTERSECTED !== intersects[0].object && intersects[0].object.material.color !== undefined) {
+          if (INTERSECTED !== intersects[0].object && intersects[0].object.material.color !== undefined && (intersects[0].object.name.indexOf('Tube') === -1)) {
             if (INTERSECTED) {
               INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
             }

@@ -233,7 +233,7 @@
       objectLoader.load(file, function (obj) {
         mesh = obj;
         for (i in obj.children) {
-          if (obj.children[i].material.color !== undefined) {
+          if (obj.children[i].material.color !== undefined && (obj.children[i].name.indexOf('Tube') == -1) ) {
             obj.children[i].material.color = car_color;
           }
 
@@ -312,8 +312,8 @@
       scene = new THREE.Scene();
 
       // Set the camera
-      camera = new THREE.PerspectiveCamera(5, container.width() / container.height(), 0.1, 500);
-      camera.position.x = -100;
+      camera = new THREE.PerspectiveCamera(8, container.width() / container.height(), 0.1, 500);
+      camera.position.x = 200;
       camera.position.y = 95;
       camera.position.z = 100;
       camera.target = new THREE.Vector3();
@@ -440,7 +440,7 @@
         var intersects = raycaster.intersectObjects(car.children, true);
         if (intersects.length > 0) {
 
-          if (INTERSECTED !== intersects[0].object && intersects[0].object.material.color !== undefined) {
+          if (INTERSECTED !== intersects[0].object && intersects[0].object.material.color !== undefined && (intersects[0].object.name.indexOf('Tube') === -1)) {
             if (INTERSECTED) {
               INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
             }
