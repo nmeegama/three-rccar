@@ -62,15 +62,7 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-md-12">
-    <nav class="nav nav-pills nav-justified">
-      <a class="nav-item nav-link active" href="index.html">Car A</a>
-      <a class="nav-item nav-link" href="car_c.html">Car C</a>
-      <a class="nav-item nav-link" href="car_d.html">Car D</a>
-      <a class="nav-item nav-link" href="car_e.html">Car E</a>
-      <a class="nav-item nav-link" href="car_f.html">Car F</a>
-      <a class="nav-item nav-link" href="car_g.html">Car G</a>
-      <a class="nav-item nav-link" href="car_i.html">Car I</a>
-    </nav>
+
     </div>
 
   </div>
@@ -78,46 +70,11 @@
     <div id="car" class="col-md-8" style="height: 800px"></div>
     <div class="col-md-4">
       <div class="row">
-        <div class="col-md-12">
-          <button onclick="exportCollada()">Export COLLADA</button>
-        </div>
-        <div class="controls__color-current col-md-2">
-          <div class="row">
-            <div class="controls__stitle col-md-12">Current</div>
-            <div class="rc-color-picker-wrap col-md-12">
-              <div class="rc-color-picker-trigger " unselectable="true" style="opacity: 1; background-color: rgb(255, 0, 0);"></div>
-            </div>
-          </div>
-        </div>
 
-        <div class="controls__color-standard col-md-10">
-          <div class="controls__stitle">Standard Colors</div>
-          <div class="controls__color-palette">
-            <div class="row">
-              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(246, 25, 34); height: 4em;"></div>
-              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(36, 141, 252); height: 4em;"></div>
-              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(41, 183, 132); height: 4em;"></div>
-              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(252, 116, 6); height: 4em;"></div>
-              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(240, 198, 0); height: 4em;"></div>
-              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(16, 16, 17); height: 4em;"></div>
-              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(214, 207, 191); height: 4em;"></div>
-              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(184, 182, 193); height: 4em;"></div>
-              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(108, 108, 108); height: 4em;"></div>
-              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(17, 103, 152); height: 4em;"></div>
-            </div>
-          </div>
 
-          <div class="controls-logo-gallery col-md-12">
-            <div class="row">
-
-            </div>
-
-          </div>
           <div class="controls-material-gallery col-md-12">
             <div class="row">
-
             </div>
-
           </div>
         </div>
 
@@ -174,6 +131,7 @@
     var car; // car object
     var car_color; // Car color
     var selected_image = null;
+    var selected_material = null;
     var logos = [
       'fox-light-colors.png',
       'rc_logo.png',
@@ -237,6 +195,20 @@
       loadObject();
     });
 
+    // Click function for logos
+    $('.controls-material-gallery').on('click', '.material-item', function () {
+      // console.log('image')
+      selected_material = $(this).find('img').attr("src").replace(".png", "").replace("Files/materials/", "");
+      console.log(selected_material);
+
+      if (selected_material.toString().indexOf('ico_noimage') != -1) {
+        selected_material = null;
+      }
+      $(this).css('border-color', 'blue');
+      scene.remove(car);
+      loadObject();
+    });
+
     window.addEventListener('load', init);
     animate();
 
@@ -262,101 +234,110 @@
     function loadObject() {
 
       // Using the three oBjectLOader to load the 3d json file
-//      var objectLoader = new THREE.ObjectLoader();
-//      objectLoader.load(file, function (obj) {
-//        mesh = obj;
-//        for (i in obj.children) {
-//          if (obj.children[i].material.color !== undefined) {
-//            obj.children[i].material.color = car_color;
-//          }
-//
-//          if (selected_image !== null && SELECTED && SELECTED.uuid == obj.children[i].uuid) {
-//            var texture = new THREE.TextureLoader().load(selected_image);
-//            material = new THREE.MeshPhongMaterial({
-//              map: texture,
-//              transparent: true
-//            });
-//
-//            //
-//            position.copy(intersection.point);
-//            orientation.copy(mouseHelper.rotation);
-//            //            if (params.rotate) orientation.z = Math.random() * 2 * Math.PI;
-//            //
-//            var scale = params.minScale + Math.random() * ( params.maxScale - params.minScale );
-//            size.set(scale, scale, scale);
-//            //
-//            //
-//            var geometry = new THREE.DecalGeometry(obj.children[i], position, orientation, size);
-//            var m = new THREE.Mesh(geometry, material);
-//
-//            scene.add(m);
-//            addLogos(obj.children[i].uuid, m.uuid);
-//            console.log(added_logos);
-//
-//          } else if (selected_image === null && SELECTED && SELECTED.uuid == obj.children[i].uuid) {
-//            removeLogo(obj.children[i].uuid);
-//          }
-//          else {
-//            car = obj;
-//            scene.add(car);
-//          }
-//
-//        }
-//
-//      });
-
+      //      var objectLoader = new THREE.ObjectLoader();
+      //      objectLoader.load(file, function (obj) {
+      //        mesh = obj;
+      //        for (i in obj.children) {
+      //          if (obj.children[i].material.color !== undefined) {
+      //            obj.children[i].material.color = car_color;
+      //          }
+      //
+      //          if (selected_image !== null && SELECTED && SELECTED.uuid == obj.children[i].uuid) {
+      //            var texture = new THREE.TextureLoader().load(selected_image);
+      //            material = new THREE.MeshPhongMaterial({
+      //              map: texture,
+      //              transparent: true
+      //            });
+      //
+      //            //
+      //            position.copy(intersection.point);
+      //            orientation.copy(mouseHelper.rotation);
+      //            //            if (params.rotate) orientation.z = Math.random() * 2 * Math.PI;
+      //            //
+      //            var scale = params.minScale + Math.random() * ( params.maxScale - params.minScale );
+      //            size.set(scale, scale, scale);
+      //            //
+      //            //
+      //            var geometry = new THREE.DecalGeometry(obj.children[i], position, orientation, size);
+      //            var m = new THREE.Mesh(geometry, material);
+      //
+      //            scene.add(m);
+      //            addLogos(obj.children[i].uuid, m.uuid);
+      //            console.log(added_logos);
+      //
+      //          } else if (selected_image === null && SELECTED && SELECTED.uuid == obj.children[i].uuid) {
+      //            removeLogo(obj.children[i].uuid);
+      //          }
+      //          else {
+      //            car = obj;
+      //            scene.add(car);
+      //          }
+      //
+      //        }
+      //
+      //      });
 
       var loader = new THREE.OBJLoader();
-      new THREE.MTLLoader()
-      .setPath( 'Files/')
-      .load( 'A.mtl', function ( materials ) {
-      // load a resource
-        console.log(materials.materialsArray);
-
-        var materialCreatorMaterials = materials.materials;
-        console.log(materialCreatorMaterials);
-        for ( var materialName in materialCreatorMaterials ) {
-          console.log(materialCreatorMaterials[ materialName ]);
-
-          if ( materialCreatorMaterials.hasOwnProperty( materialName ) ) {
-
-            materials[ materialName ] = materialCreatorMaterials[ materialName ];
-
+      if (selected_material != null) {
+        new THREE.MTLLoader().setPath('Files/').load(selected_material + ".mtl", function (materials) {
+          // load a resource
+          if (selected_material != null) {
+            materials.preload();
+            loader.setMaterials(materials);
           }
-        }
 
-        materials.preload();
+          loader.load(
+              // resource URL
+              'Files/A.obj',
+              // called when resource is loaded
+              function (object) {
 
-        loader.setMaterials( materials );
+                car = object;
+                console.log(car);
+                scene.add(car);
 
+              },
+              // called when loading is in progresses
+              function (xhr) {
 
-      loader.load(
-          // resource URL
-          'Files/A.obj',
-          // called when resource is loaded
-          function ( object ) {
+                console.log(( xhr.loaded / xhr.total * 100 ) + '% loaded');
 
-            car = object;
-            console.log(car);
-            scene.add(car);
+              },
+              // called when loading has errors
+              function (error) {
 
-          },
-          // called when loading is in progresses
-          function ( xhr ) {
+                console.log('An error happened');
 
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+              }
+          );
 
-          },
-          // called when loading has errors
-          function ( error ) {
+        });
+      } else {
+        loader.load(
+            // resource URL
+            'Files/A.obj',
+            // called when resource is loaded
+            function (object) {
 
-            console.log( 'An error happened' );
+              car = object;
+              console.log(car);
+              scene.add(car);
 
-          }
-      );
+            },
+            // called when loading is in progresses
+            function (xhr) {
 
+              console.log(( xhr.loaded / xhr.total * 100 ) + '% loaded');
 
-      } );
+            },
+            // called when loading has errors
+            function (error) {
+
+              console.log('An error happened');
+
+            }
+        );
+      }
     }
 
     function addLogos(component_uuid, logo_uuid) {
