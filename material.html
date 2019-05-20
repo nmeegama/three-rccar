@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>three.js webgl - loaders - Clara.io JSON loader</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <style>
+    body {
+      font-family: Monospace;
+      color: #fff;
+      margin: 0px;
+      overflow: hidden;
+    }
+
+    .controls__color-palette {
+      margin: 10px;
+    }
+
+    .controls__color-palette-item {
+      min-width: 34px;
+      min-height: 4em;
+      border-radius: 2px;
+      cursor: pointer;
+      margin: 4px;
+    }
+
+    .rc-color-picker-wrap {
+      display: inline-block;
+      margin: 10px;
+    }
+
+    .controls__color-current .rc-color-picker-trigger {
+      min-height: 4em;
+      border: 0;
+      box-shadow: none;
+      padding: 0;
+    }
+
+    .controls-logo-gallery img {
+      width: 100%;
+    }
+
+    .logo-item {
+      border: solid 1px #1b1b1b;
+    }
+
+    #info a, .button {
+      color: #f00;
+      font-weight: bold;
+      text-decoration: underline;
+      cursor: pointer
+    }
+  </style>
+  <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-12">
+    <nav class="nav nav-pills nav-justified">
+      <a class="nav-item nav-link active" href="index.html">Car A</a>
+      <a class="nav-item nav-link" href="car_c.html">Car C</a>
+      <a class="nav-item nav-link" href="car_d.html">Car D</a>
+      <a class="nav-item nav-link" href="car_e.html">Car E</a>
+      <a class="nav-item nav-link" href="car_f.html">Car F</a>
+      <a class="nav-item nav-link" href="car_g.html">Car G</a>
+      <a class="nav-item nav-link" href="car_i.html">Car I</a>
+    </nav>
+    </div>
+
+  </div>
+  <div class="row">
+    <div id="car" class="col-md-8" style="height: 800px"></div>
+    <div class="col-md-4">
+      <div class="row">
+        <div class="col-md-12">
+          <button onclick="exportCollada()">Export COLLADA</button>
+        </div>
+        <div class="controls__color-current col-md-2">
+          <div class="row">
+            <div class="controls__stitle col-md-12">Current</div>
+            <div class="rc-color-picker-wrap col-md-12">
+              <div class="rc-color-picker-trigger " unselectable="true" style="opacity: 1; background-color: rgb(255, 0, 0);"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls__color-standard col-md-10">
+          <div class="controls__stitle">Standard Colors</div>
+          <div class="controls__color-palette">
+            <div class="row">
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(246, 25, 34); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(36, 141, 252); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(41, 183, 132); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(252, 116, 6); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(240, 198, 0); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(16, 16, 17); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(214, 207, 191); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(184, 182, 193); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(108, 108, 108); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(17, 103, 152); height: 4em;"></div>
+            </div>
+          </div>
+
+          <div class="controls-logo-gallery col-md-12">
+            <div class="row">
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+
+  <script src="node_modules/three/build/three.js"></script>
+  <script src="three.js/examples/js/controls/OrbitControls.js"></script>
+  <script src="three.js/examples/js/exporters/ColladaExporter.js"></script>
+  <script src="three.js/examples/js/geometries/DecalGeometry.js"></script>
+  <script src="three.js/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="three.js/examples/js/loaders/OBJLoader.js"></script>
+
+  <script src="three.js/examples/js/loaders/MTLLoader.js"></script>
+
+
+  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="node_modules/jquery/dist/jquery.js"></script>
+
+
+  <script>
+    var isOnCanvas = false; // Is the mouse pointer on the canvas
+    var mouseDown = false; // Is the mouse clicked
+    var file = "Files/A.obj"; // The Json file to change the car
+    var container = $('#car'); // The div container including the car
+
+    // Mouse pointer in container event
+    container.mouseenter(function () {
+      isOnCanvas = true;
+    });
+
+    //Mouse pointer has left container event
+    container.mouseleave(function () {
+      isOnCanvas = false;
+    });
+
+    //Is mouse left button down or not
+    container.mousedown(function () {
+      mouseDown = true;
+    }).mouseup(function () {
+      mouseDown = false;
+    });
+
+    var mouse = new THREE.Vector2();
+    var INTERSECTED, SELECTED, SELECTED_ORIGINAL_STATE;
+    var raycaster = new THREE.Raycaster();
+    var camera, scene, renderer;
+    var mouseX = 0, mouseY = 0;
+    var car; // car object
+    var car_color; // Car color
+    var selected_image = null;
+    var logos = [
+      'fox-light-colors.png',
+      'rc_logo.png',
+      'Motul_logo.png'
+    ];
+    //    var intersection = {
+    //      point: new THREE.Vector3()
+    //    };
+    var intersection = {
+      intersects: false,
+      point: new THREE.Vector3(),
+      normal: new THREE.Vector3()
+    };
+
+    var position = new THREE.Vector3();
+    var orientation = new THREE.Euler();
+    var decals = [];
+    var added_logos = {};
+    var mouseHelper;
+    var size = new THREE.Vector3(10, 10, 10);
+
+    var params = {
+      minScale: 1.5,
+      maxScale: 4,
+      rotate: true,
+      clear: function () {
+
+        removeDecals();
+
+      }
+    };
+
+    // A Color on the color pallette is clicked
+    $('.controls__color-palette-item').click(function () {
+      var selected_color = $(this).css('background-color');
+      // set the current color to the color clicked
+      $('.rc-color-picker-trigger').css('background-color', selected_color);
+      // change the car color variable
+      car_color = new THREE.Color(selected_color);
+      // remove the existing car
+      scene.remove(car);
+      // LoadObject with new car
+      loadObject();
+
+    });
+
+    // Click function for logos
+    $('.controls-logo-gallery').on('click', '.logo-item', function () {
+      // console.log('image')
+      selected_image = $(this).find('img').attr("src");
+      if (selected_image.toString().indexOf('ico_noimage.png') != -1) {
+        selected_image = null;
+      }
+      $(this).css('border-color', 'blue');
+      scene.remove(car);
+      loadObject();
+    });
+
+    window.addEventListener('load', init);
+    animate();
+
+    // Load all logos
+    function loadImages() {
+      var folder = "logo-images/";
+      var dafault_img = "default/ico_noimage.png";
+      $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item default"> <img  src="' + folder + dafault_img + '"></div>');
+      for (var i in logos) {
+        $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item"> <img  src="' + folder + logos[i] + '"></div>');
+      }
+    }
+
+    function loadObject() {
+
+      // Using the three oBjectLOader to load the 3d json file
+//      var objectLoader = new THREE.ObjectLoader();
+//      objectLoader.load(file, function (obj) {
+//        mesh = obj;
+//        for (i in obj.children) {
+//          if (obj.children[i].material.color !== undefined) {
+//            obj.children[i].material.color = car_color;
+//          }
+//
+//          if (selected_image !== null && SELECTED && SELECTED.uuid == obj.children[i].uuid) {
+//            var texture = new THREE.TextureLoader().load(selected_image);
+//            material = new THREE.MeshPhongMaterial({
+//              map: texture,
+//              transparent: true
+//            });
+//
+//            //
+//            position.copy(intersection.point);
+//            orientation.copy(mouseHelper.rotation);
+//            //            if (params.rotate) orientation.z = Math.random() * 2 * Math.PI;
+//            //
+//            var scale = params.minScale + Math.random() * ( params.maxScale - params.minScale );
+//            size.set(scale, scale, scale);
+//            //
+//            //
+//            var geometry = new THREE.DecalGeometry(obj.children[i], position, orientation, size);
+//            var m = new THREE.Mesh(geometry, material);
+//
+//            scene.add(m);
+//            addLogos(obj.children[i].uuid, m.uuid);
+//            console.log(added_logos);
+//
+//          } else if (selected_image === null && SELECTED && SELECTED.uuid == obj.children[i].uuid) {
+//            removeLogo(obj.children[i].uuid);
+//          }
+//          else {
+//            car = obj;
+//            scene.add(car);
+//          }
+//
+//        }
+//
+//      });
+
+
+      var loader = new THREE.OBJLoader();
+      new THREE.MTLLoader()
+      .setPath( 'Files/')
+      .load( 'A.mtl', function ( materials ) {
+      // load a resource
+        console.log(materials.materials.Met_A);
+
+        var materialCreatorMaterials = materials.materials;
+        console.log(materialCreatorMaterials);
+        for ( var materialName in materialCreatorMaterials ) {
+          console.log(materialCreatorMaterials[ materialName ]);
+
+          if ( materialCreatorMaterials.hasOwnProperty( materialName ) ) {
+
+            materials[ materialName ] = materialCreatorMaterials[ materialName ];
+
+          }
+        }
+
+        materials.preload();
+
+        loader.setMaterials( materials );
+
+
+      loader.load(
+          // resource URL
+          'Files/A.obj',
+          // called when resource is loaded
+          function ( object ) {
+
+            car = object;
+            console.log(car);
+            scene.add(car);
+
+          },
+          // called when loading is in progresses
+          function ( xhr ) {
+
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+          },
+          // called when loading has errors
+          function ( error ) {
+
+            console.log( 'An error happened' );
+
+          }
+      );
+
+
+      } );
+    }
+
+    function addLogos(component_uuid, logo_uuid) {
+      if (added_logos[component_uuid] !== undefined) {
+        added_logos[component_uuid].push(logo_uuid);
+      } else {
+        added_logos[component_uuid] = [];
+        added_logos[component_uuid].push(logo_uuid);
+      }
+    }
+
+    function removeLogo(component_uuid) {
+      for (i in added_logos) {
+        if (i == component_uuid) {
+          for (l in added_logos[i]) {
+            console.log(added_logos[i][l]);
+            for (c in scene.children) {
+              if (scene.children[c].uuid == added_logos[i][l]) {
+                scene.remove(scene.children[c]);
+              }
+            }
+
+          }
+
+        }
+      }
+
+    }
+
+    // the initialize function
+    function init() {
+
+      // The renderer
+      renderer = new THREE.WebGLRenderer();
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(container.width(), container.height());
+      // Add the renderer to the container
+      container.append($(renderer.domElement));
+      scene = new THREE.Scene();
+
+      // Set the camera
+      camera = new THREE.PerspectiveCamera(8, container.width() / container.height(), 0.1, 500);
+      camera.position.x = 200;
+      camera.position.y = 95;
+      camera.position.z = 100;
+      camera.target = new THREE.Vector3();
+
+      var controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.minDistance = 50;
+      controls.maxDistance = 200;
+
+      car_color = new THREE.Color('rgb(41, 183, 132)');
+      // Add light //
+      scene.add(new THREE.AmbientLight(0x443333));
+
+      var light = new THREE.DirectionalLight(0xffddcc, 1);
+      light.position.set(1, 0.75, 0.5);
+      scene.add(light);
+
+      var light = new THREE.DirectionalLight(0xccccff, 1);
+      light.position.set(-1, 0.75, -0.5);
+      scene.add(light);
+
+      var geometry = new THREE.BufferGeometry();
+      geometry.setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+
+      line = new THREE.Line(geometry, new THREE.LineBasicMaterial());
+      scene.add(line);
+
+      // Loading the object (not rendered yet)
+      loadObject();
+      raycaster = new THREE.Raycaster();
+      mouseHelper = new THREE.Mesh(new THREE.BoxBufferGeometry(0.25, 0.25, 1), new THREE.MeshNormalMaterial());
+      mouseHelper.visible = true;
+      scene.add(mouseHelper);
+
+      // CONTROLS
+      //      cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+      //      cameraControls.addEventListener( 'change', render );
+
+      //      camera.lookAt( scene.position );
+      //      renderer.render( scene, camera );
+      //A event listner to mouse movements
+      document.addEventListener('mousemove', onDocumentMouseMove, false);
+      document.addEventListener('mousedown', onDocumentMouseDown, false);
+      //      window.addEventListener( 'resize', onWindowResize, false );
+      // Call to load logos
+      loadImages();
+    }
+
+    function onDocumentMouseMove(event) {
+      //      mouseX = ( event.clientX - windowHalfX ) / 2;
+      //      mouseY = ( event.clientY - windowHalfY ) / 2;
+
+      //      if (isOnCanvas && mouseDown) {
+      //        mouseX = (event.clientX / window.innerWidth) * (container.width() / 120);
+      //        mouseY = (event.clientY / window.innerHeight) * (container.height() / 120);
+      //      }
+      //
+      //      //      mouse.x = (event.clientX / container.width()) ;
+      //      //      mouse.y = (event.clientY / container.height()) ;
+      if (!mouseDown) {
+        mouse.x = ( event.clientX / container.width() ) * 2 - 1;
+        mouse.y = -( event.clientY / container.height() ) * 2 + 1;
+      }
+    }
+
+    function onDocumentMouseDown(event) {
+
+      var vector = new THREE.Vector3(( event.clientX / container.width() ) * 2 - 1, -( event.clientY / container.height() ) * 2 + 1, 0.5);
+      vector = vector.unproject(camera);
+
+      var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+
+      var intersects = raycaster.intersectObjects(car.children, true);
+
+      if (intersects.length > 0) {
+        if (SELECTED !== intersects[0].object && intersects[0].object.material.color !== undefined) {
+          //          if (SELECTED) {
+          //            SELECTED_ORIGINAL_STATE.material.transparent = false;
+          //            SELECTED_ORIGINAL_STATE.material.opacity = 1;
+          //          }
+          var p = intersects[0].point;
+          intersection.point.copy(p);
+          SELECTED = intersects[0].object;
+          SELECTED_ORIGINAL_STATE = SELECTED;
+
+          mouseHelper.position.copy(p);
+          intersection.point.copy(p);
+          var n = intersects[0].face.normal.clone();
+          n.transformDirection(SELECTED.matrixWorld);
+          n.multiplyScalar(10);
+          n.add(intersects[0].point);
+          intersection.normal.copy(intersects[0].face.normal);
+          mouseHelper.lookAt(n);
+        }
+      }
+
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      //      car.rotation.x += 0.01;
+
+      //      car.rotation.y = mouseX;
+
+      //car.rotation.x = mouseY;
+
+      render();
+
+    }
+
+    function render() {
+      //      camera.position.x += ( mouseX - camera.position.x ) * .05;
+      //      camera.position.y += ( - mouseY - camera.position.y ) * .05;
+
+      //      console.log(camera.position);
+      if (!car) return;
+      if (camera.position.y < 0) {
+        camera.position.y = 0;
+      }
+      camera.lookAt(scene.position);
+
+      raycaster.setFromCamera(mouse, camera);
+      // console.log(scene.children);
+      if (!mouseDown) {
+        var intersects = raycaster.intersectObjects(car.children, true);
+        if (intersects.length > 0) {
+
+          if (INTERSECTED !== intersects[0].object && intersects[0].object.material.color !== undefined && (intersects[0].object.name.indexOf('Tube') === -1)) {
+            if (INTERSECTED) {
+              INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+            }
+            INTERSECTED = intersects[0].object;
+            INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+            INTERSECTED.material.emissive.setHex(0xff0000);
+          }
+        } else {
+          if (INTERSECTED) {
+            INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+          }
+          INTERSECTED = null;
+        }
+      }
+
+      renderer.render(scene, camera);
+    }
+
+
+    var exporter = new THREE.ColladaExporter();
+    function exportCollada() {
+      var result = exporter.parse( car );
+
+      saveString( result.data, 'myfile.dae' );
+      result.textures.forEach( tex => {
+        saveArrayBuffer( tex.data, `${ tex.name }.${ tex.ext }` );
+    });
+    }
+
+    function save( blob, filename ) {
+      link.href = URL.createObjectURL( blob );
+      link.download = filename;
+      link.click();
+    }
+    function saveString( text, filename ) {
+      save( new Blob( [ text ], { type: 'text/plain' } ), filename );
+    }
+    function saveArrayBuffer( buffer, filename ) {
+      save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
+    }
+
+    var link = document.createElement( 'a' );
+    link.style.display = 'none';
+    document.body.appendChild( link );
+
+  </script>
+
+</body>
+</html>
