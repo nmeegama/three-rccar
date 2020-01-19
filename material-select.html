@@ -36,6 +36,11 @@
       padding: 0;
     }
 
+    .selected-mat {
+      border-color: blue !important;
+      border : 4px solid !important;
+    }
+
     .controls-logo-gallery img , .controls-material-gallery img{
       width: 100%;
     }
@@ -131,7 +136,7 @@
     var car; // car object
     var car_color; // Car color
     var selected_image = null;
-    var selected_material = null;
+    var selected_materials = [];
     var logos = [
       'fox-light-colors.png',
       'rc_logo.png',
@@ -140,7 +145,10 @@
     var materials = [
       'A',
       'B',
-      'C'
+      'C',
+        'D',
+        'E',
+        'F',
     ];
     //    var intersection = {
     //      point: new THREE.Vector3()
@@ -156,6 +164,7 @@
     var decals = [];
     var added_logos = {};
     var mouseHelper;
+    var addedMaterails;
     var size = new THREE.Vector3(10, 10, 10);
 
     var params = {
@@ -198,15 +207,38 @@
     // Click function for logos
     $('.controls-material-gallery').on('click', '.material-item', function () {
       // console.log('image')
-      selected_material = $(this).find('img').attr("src").replace(".png", "").replace("Files/materials/", "");
-      console.log(selected_material);
 
-      if (selected_material.toString().indexOf('ico_noimage') != -1) {
-        selected_material = null;
+
+
+      if (selected_materials.indexOf('ico_noimage') != -1) {
+        selected_materials = [];
+        addedMaterails.materials.Default.visible = 1;
       }
-      $(this).css('border-color', 'blue');
-      scene.remove(car);
-      loadObject();
+      if(!$(this).hasClass('selected-mat')) {
+        selected_materials.push($(this).find('img').attr("src").replace(".png", "").replace("Files/pics/", ""));
+        $(this).addClass('selected-mat');
+      } else {
+        var removed_m = $(this).find('img').attr("src").replace(".png", "").replace("Files/pics/", "");
+        console.log(removed_m);
+        var index_rm = selected_materials.indexOf(removed_m);
+        selected_materials.splice(index_rm, 1);
+        $(this).removeClass('selected-mat');
+      }
+
+      console.log(selected_materials);
+
+      for(a in addedMaterails.materials) {
+        addedMaterails.materials[a].visible = 0;
+      }
+      addedMaterails.materials.Default.visible = 1;
+
+      for(m in selected_materials){
+        console.log(m)
+        console.log(selected_materials[m])
+        addedMaterails.materials[selected_materials[m]].visible = 1;
+
+      }
+
     });
 
     window.addEventListener('load', init);
@@ -223,7 +255,7 @@
     }
     // Load all logos
     function loadMaterials() {
-      var folder = "Files/materials/";
+      var folder = "Files/pics/";
       var dafault_img = "default/ico_noimage.png";
       $('.controls-material-gallery .row').append('<div class="col-md-3 material-item default"> <img  src="logo-images/' + dafault_img + '"></div>');
       for (var i in materials) {
@@ -233,68 +265,68 @@
 
     function loadObject() {
 
-      // Using the three oBjectLOader to load the 3d json file
-      //      var objectLoader = new THREE.ObjectLoader();
-      //      objectLoader.load(file, function (obj) {
-      //        mesh = obj;
-      //        for (i in obj.children) {
-      //          if (obj.children[i].material.color !== undefined) {
-      //            obj.children[i].material.color = car_color;
-      //          }
-      //
-      //          if (selected_image !== null && SELECTED && SELECTED.uuid == obj.children[i].uuid) {
-      //            var texture = new THREE.TextureLoader().load(selected_image);
-      //            material = new THREE.MeshPhongMaterial({
-      //              map: texture,
-      //              transparent: true
-      //            });
-      //
-      //            //
-      //            position.copy(intersection.point);
-      //            orientation.copy(mouseHelper.rotation);
-      //            //            if (params.rotate) orientation.z = Math.random() * 2 * Math.PI;
-      //            //
-      //            var scale = params.minScale + Math.random() * ( params.maxScale - params.minScale );
-      //            size.set(scale, scale, scale);
-      //            //
-      //            //
-      //            var geometry = new THREE.DecalGeometry(obj.children[i], position, orientation, size);
-      //            var m = new THREE.Mesh(geometry, material);
-      //
-      //            scene.add(m);
-      //            addLogos(obj.children[i].uuid, m.uuid);
-      //            console.log(added_logos);
-      //
-      //          } else if (selected_image === null && SELECTED && SELECTED.uuid == obj.children[i].uuid) {
-      //            removeLogo(obj.children[i].uuid);
-      //          }
-      //          else {
-      //            car = obj;
-      //            scene.add(car);
-      //          }
-      //
-      //        }
-      //
-      //      });
-
       var loader = new THREE.OBJLoader();
-      if (selected_material != null) {
-        new THREE.MTLLoader().setPath('Files/').load(selected_material + ".mtl", function (materials) {
+
+        new THREE.MTLLoader()
+        .setPath( 'Files/')
+        .load( 'CarA01.mtl', function ( materials ) {
           // load a resource
-          if (selected_material != null) {
+          if (selected_materials != null) {
             materials.preload();
+
             loader.setMaterials(materials);
           }
 
           loader.load(
               // resource URL
-              'Files/A.obj',
+              'Files/CarA01.obj',
               // called when resource is loaded
               function (object) {
 
                 car = object;
-                console.log(car);
+
+                materials.materials.Default.visible = 0;
+                materials.materials.Default.color = null;
+                materials.materials.Default.alphaMap = null;
+
+                materials.materials.A.visible = 0;
+                materials.materials.A.color = null;
+                materials.materials.A.alphaMap = null;
+
+                materials.materials.B.visible = 0;
+                materials.materials.B.color = null;
+                materials.materials.B.alphaMap = null;
+
+                materials.materials.C.visible = 0;
+                materials.materials.C.color = null;
+                materials.materials.C.alphaMap = null;
+
+                materials.materials.D.visible = 0;
+                materials.materials.D.color = null;
+                materials.materials.D.alphaMap = null;
+
+                materials.materials.E.visible = 0;
+                materials.materials.E.color = null;
+                materials.materials.E.alphaMap = null;
+
+                materials.materials.F.visible = 0;
+                materials.materials.F.color = null;
+                materials.materials.F.alphaMap = null;
+
+                addedMaterails = materials;
+
                 scene.add(car);
+                if (selected_materials != null  && selected_materials.length != 0) {
+                  for (m in selected_materials) {
+                    console.log(m)
+                    console.log(selected_materials[m]);
+                    materials.materials[selected_materials[m]].visible = 1;
+                  }
+                } else {
+                  materials.materials.Default.visible = 1;
+
+                }
+
 
               },
               // called when loading is in progresses
@@ -311,33 +343,10 @@
               }
           );
 
+
+
         });
-      } else {
-        loader.load(
-            // resource URL
-            'Files/A.obj',
-            // called when resource is loaded
-            function (object) {
 
-              car = object;
-              console.log(car);
-              scene.add(car);
-
-            },
-            // called when loading is in progresses
-            function (xhr) {
-
-              console.log(( xhr.loaded / xhr.total * 100 ) + '% loaded');
-
-            },
-            // called when loading has errors
-            function (error) {
-
-              console.log('An error happened');
-
-            }
-        );
-      }
     }
 
     function addLogos(component_uuid, logo_uuid) {
@@ -425,7 +434,7 @@
       document.addEventListener('mousedown', onDocumentMouseDown, false);
       //      window.addEventListener( 'resize', onWindowResize, false );
       // Call to load logos
-      loadImages();
+
       loadMaterials();
     }
 
