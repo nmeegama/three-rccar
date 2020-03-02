@@ -230,7 +230,7 @@
       car_color = new THREE.Color(selected_color);
       // remove the existing car
       scene.remove(car);
-      Pace.restart()
+      //Pace.restart()
       // LoadObject with new car
       loadObject();
 
@@ -308,7 +308,7 @@
     }
 
     function loadObject() {
-      Pace.start();
+      //Pace.start();
       var loader = new THREE.OBJLoader();
 
         new THREE.MTLLoader()
@@ -387,11 +387,9 @@
 
               // called when loading is in progresses
               function (xhr) {
-
+                  //Pace.track();
                 console.log(( xhr.loaded / xhr.total * 100 ) + '% loaded');
-                if(( xhr.loaded / xhr.total * 100 ) >= 100) {
-                  Pace.stop();
-                }
+//
 
 
               },
