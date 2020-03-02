@@ -61,9 +61,13 @@
     }
   </style>
   <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+  <script src="pace/pace.js"></script>
+  <link href="pace/themes/blue/pace-theme-center-circle.css" rel="stylesheet" />
+
 </head>
 
 <body>
+<div class="ldBar" data-preset="bubble"></div>
 <div class="container-fluid">
   <div class="row">
     <div class="col-md-12">
@@ -226,6 +230,7 @@
       car_color = new THREE.Color(selected_color);
       // remove the existing car
       scene.remove(car);
+      Pace.restart()
       // LoadObject with new car
       loadObject();
 
@@ -303,7 +308,7 @@
     }
 
     function loadObject() {
-
+      Pace.start();
       var loader = new THREE.OBJLoader();
 
         new THREE.MTLLoader()
@@ -379,10 +384,15 @@
 
 
               },
+
               // called when loading is in progresses
               function (xhr) {
 
                 console.log(( xhr.loaded / xhr.total * 100 ) + '% loaded');
+                if(( xhr.loaded / xhr.total * 100 ) >= 100) {
+                  Pace.stop();
+                }
+
 
               },
               // called when loading has errors
