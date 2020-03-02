@@ -74,14 +74,53 @@
   <div class="row">
     <div id="car" class="col-md-8" style="height: 800px"></div>
     <div class="col-md-4">
+
       <div class="row">
 
-
-          <div class="controls-material-gallery col-md-12">
-            <div class="row">
+        <div class="controls__color-current col-md-2">
+          <div class="row">
+            <div class="controls__stitle col-md-12">Current</div>
+            <div class="rc-color-picker-wrap col-md-12">
+              <div class="rc-color-picker-trigger " unselectable="true" style="opacity: 1; background-color: rgb(255, 0, 0);"></div>
             </div>
           </div>
         </div>
+
+        <div class="controls__color-standard col-md-10">
+          <div class="controls__stitle">Standard Colors</div>
+          <div class="controls__color-palette">
+            <div class="row">
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(246, 25, 34); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(36, 141, 252); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(41, 183, 132); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(252, 116, 6); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(240, 198, 0); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(16, 16, 17); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(214, 207, 191); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(184, 182, 193); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(108, 108, 108); height: 4em;"></div>
+              <div class="controls__color-palette-item col-md-2" style="background-color: rgb(17, 103, 152); height: 4em;"></div>
+            </div>
+          </div>
+
+          <div class="controls-logo-gallery col-md-12">
+            <div class="row">
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <div class="row">
+
+
+        <div class="controls-material-gallery col-md-12">
+          <div class="row">
+          </div>
+        </div>
+      </div>
 
 
       </div>
@@ -257,9 +296,9 @@
     function loadMaterials() {
       var folder = "Files/pics/";
       var dafault_img = "default/ico_noimage.png";
-      $('.controls-material-gallery .row').append('<div class="col-md-3 material-item default"> <img  src="logo-images/' + dafault_img + '"></div>');
+      $('.controls-material-gallery .row').append('<div class="col-md-2 material-item default"> <img  src="logo-images/' + dafault_img + '"></div>');
       for (var i in materials) {
-        $('.controls-material-gallery .row').append('<div class="col-md-3 material-item"> <img  src="' + folder + materials[i] + '.png"></div>');
+        $('.controls-material-gallery .row').append('<div class="col-md-2 material-item"> <img  src="' + folder + materials[i] + '.png"></div>');
       }
     }
 
@@ -283,9 +322,11 @@
               // called when resource is loaded
               function (object) {
 
+
+
                 car = object;
 
-                materials.materials.Default.visible = 0;
+                materials.materials.Default.visible = 1;
                 materials.materials.Default.color = null;
                 materials.materials.Default.alphaMap = null;
 
@@ -315,6 +356,13 @@
 
                 addedMaterails = materials;
 
+
+                for (i in car.children) {
+                  if (car.children[i].material.color !== undefined) {
+                    car.children[i].material.color = car_color;
+                  }
+                }
+
                 scene.add(car);
                 if (selected_materials != null  && selected_materials.length != 0) {
                   for (m in selected_materials) {
@@ -326,6 +374,8 @@
                   materials.materials.Default.visible = 1;
 
                 }
+
+
 
 
               },
@@ -398,7 +448,7 @@
       controls.minDistance = 50;
       controls.maxDistance = 200;
 
-      car_color = new THREE.Color('rgb(41, 183, 132)');
+      car_color = new THREE.Color($('.rc-color-picker-trigger').css('background-color'));
       // Add light //
       scene.add(new THREE.AmbientLight(0x443333));
 
