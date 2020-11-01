@@ -38,10 +38,10 @@
 
     .selected-mat {
       border-color: blue !important;
-      border : 4px solid !important;
+      border: 4px solid !important;
     }
 
-    .controls-logo-gallery img , .controls-material-gallery img{
+    .controls-logo-gallery img, .controls-material-gallery img {
       width: 100%;
     }
 
@@ -49,10 +49,12 @@
       border: solid 1px #1b1b1b;
       cursor: pointer;
     }
+
     .material-item {
       border: solid 1px #1b1b1b;
       cursor: pointer;
     }
+
     #info a, .button {
       color: #f00;
       font-weight: bold;
@@ -62,7 +64,7 @@
   </style>
   <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
   <script src="pace/pace.js"></script>
-  <link href="pace/themes/blue/pace-theme-center-circle.css" rel="stylesheet" />
+  <link href="pace/themes/blue/pace-theme-center-circle.css" rel="stylesheet"/>
 
 </head>
 
@@ -127,501 +129,532 @@
       </div>
 
 
-      </div>
-      </div>
     </div>
-
   </div>
+</div>
+
+</div>
 
 
-  <script src="node_modules/three/build/three.js"></script>
-  <script src="three.js/examples/js/controls/OrbitControls.js"></script>
-  <script src="three.js/examples/js/exporters/ColladaExporter.js"></script>
-  <script src="three.js/examples/js/geometries/DecalGeometry.js"></script>
-  <script src="three.js/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="three.js/examples/js/loaders/OBJLoader.js"></script>
+<script src="node_modules/three/build/three.js"></script>
+<script src="three.js/examples/js/controls/OrbitControls.js"></script>
+<script src="three.js/examples/js/geometries/DecalGeometry.js"></script>
+<script src="three.js/examples/js/loaders/GLTFLoader.js"></script>
+<script src="three.js/examples/js/loaders/OBJLoader.js"></script>
 
-  <script src="three.js/examples/js/loaders/MTLLoader.js"></script>
-
-
-  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-  <script src="node_modules/jquery/dist/jquery.js"></script>
+<script src="three.js/examples/js/loaders/MTLLoader.js"></script>
 
 
-  <script>
-    var isOnCanvas = false; // Is the mouse pointer on the canvas
-    var mouseDown = false; // Is the mouse clicked
-    var file = "Files/A.obj"; // The Json file to change the car
-    var container = $('#car'); // The div container including the car
-
-    // Mouse pointer in container event
-    container.mouseenter(function () {
-      isOnCanvas = true;
-    });
-
-    //Mouse pointer has left container event
-    container.mouseleave(function () {
-      isOnCanvas = false;
-    });
-
-    //Is mouse left button down or not
-    container.mousedown(function () {
-      mouseDown = true;
-    }).mouseup(function () {
-      mouseDown = false;
-    });
-
-    var mouse = new THREE.Vector2();
-    var INTERSECTED, SELECTED, SELECTED_ORIGINAL_STATE;
-    var raycaster = new THREE.Raycaster();
-    var camera, scene, renderer;
-    var mouseX = 0, mouseY = 0;
-    var car; // car object
-    var car_color; // Car color
-    var selected_image = null;
-    var selected_materials = [];
-    var logos = [
-      'fox-light-colors.png',
-      'rc_logo.png',
-      'Motul_logo.png'
-    ];
-    var materials = [
-      'A',
-      'B',
-      'C',
-        'D',
-        'E',
-        'F',
-    ];
-    //    var intersection = {
-    //      point: new THREE.Vector3()
-    //    };
-    var intersection = {
-      intersects: false,
-      point: new THREE.Vector3(),
-      normal: new THREE.Vector3()
-    };
-
-    var position = new THREE.Vector3();
-    var orientation = new THREE.Euler();
-    var decals = [];
-    var added_logos = {};
-    var mouseHelper;
-    var addedMaterails;
-    var size = new THREE.Vector3(10, 10, 10);
-
-    var params = {
-      minScale: 1.5,
-      maxScale: 4,
-      rotate: true,
-      clear: function () {
-
-        removeDecals();
-
-      }
-    };
-
-    // A Color on the color pallette is clicked
-    $('.controls__color-palette-item').click(function () {
-      var selected_color = $(this).css('background-color');
-      // set the current color to the color clicked
-      $('.rc-color-picker-trigger').css('background-color', selected_color);
-      // change the car color variable
-      car_color = new THREE.Color(selected_color);
-      // remove the existing car
-      scene.remove(car);
-      //Pace.restart()
-      // LoadObject with new car
-      loadObject();
-
-    });
-
-    // Click function for logos
-    $('.controls-logo-gallery').on('click', '.logo-item', function () {
-      // console.log('image')
-      selected_image = $(this).find('img').attr("src");
-      if (selected_image.toString().indexOf('ico_noimage.png') != -1) {
-        selected_image = null;
-      }
-      $(this).css('border-color', 'blue');
-      scene.remove(car);
-      loadObject();
-    });
-
-    // Click function for logos
-    $('.controls-material-gallery').on('click', '.material-item', function () {
-      // console.log('image')
+<script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="node_modules/jquery/dist/jquery.js"></script>
 
 
+<script>
+  var isOnCanvas = false; // Is the mouse pointer on the canvas
+  var mouseDown = false; // Is the mouse clicked
+  var file = "Files/CarA01.obj"; // The Json file to change the car
+  var container = $('#car'); // The div container including the car
 
-      if (selected_materials.indexOf('ico_noimage') != -1) {
-        selected_materials = [];
-        addedMaterails.materials.Default.visible = 1;
-      }
-      if(!$(this).hasClass('selected-mat')) {
-        selected_materials.push($(this).find('img').attr("src").replace(".png", "").replace("Files/pics/", ""));
-        $(this).addClass('selected-mat');
-      } else {
-        var removed_m = $(this).find('img').attr("src").replace(".png", "").replace("Files/pics/", "");
-        console.log(removed_m);
-        var index_rm = selected_materials.indexOf(removed_m);
-        selected_materials.splice(index_rm, 1);
-        $(this).removeClass('selected-mat');
-      }
+  // Mouse pointer in container event
+  container.mouseenter(function () {
+    isOnCanvas = true;
+  });
 
-      console.log(selected_materials);
+  //Mouse pointer has left container event
+  container.mouseleave(function () {
+    isOnCanvas = false;
+  });
 
-      for(a in addedMaterails.materials) {
-        addedMaterails.materials[a].visible = 0;
-      }
+  //Is mouse left button down or not
+  container.mousedown(function () {
+    mouseDown = true;
+  }).mouseup(function () {
+    mouseDown = false;
+  });
+
+  /**
+   * Global variables for car control
+   * */
+  var mouse = new THREE.Vector2();
+  var INTERSECTED, SELECTED, SELECTED_ORIGINAL_STATE;
+  var raycaster = new THREE.Raycaster();
+  var camera, scene, renderer;
+  var mouseX = 0, mouseY = 0;
+  var car; // car object
+  var car_color; // Car color
+  var selected_image = null;
+  var selected_materials = [];
+  var logos = [
+    'fox-light-colors.png',
+    'rc_logo.png',
+    'Motul_logo.png'
+  ];
+  var materials = [
+    'A',
+    'B',
+    'C',
+    'D',
+    'E',
+    'F',
+  ];
+  //    var intersection = {
+  //      point: new THREE.Vector3()
+  //    };
+  var intersection = {
+    intersects: false,
+    point: new THREE.Vector3(),
+    normal: new THREE.Vector3()
+  };
+
+  var position = new THREE.Vector3();
+  var orientation = new THREE.Euler();
+  var decals = [];
+  var added_logos = {};
+  var mouseHelper;
+  var addedMaterails;
+  var size = new THREE.Vector3(10, 10, 10);
+
+  var params = {
+    minScale: 1.5,
+    maxScale: 4,
+    rotate: true,
+    clear: function () {
+
+      removeDecals();
+
+    }
+  };
+
+  /**
+   * End of Global variables for car control
+   * */
+
+
+  // A Color on the color pallette is clicked
+  $('.controls__color-palette-item').click(function () {
+    var selected_color = $(this).css('background-color');
+    // set the current color to the color clicked
+    $('.rc-color-picker-trigger').css('background-color', selected_color);
+    // change the car color variable
+    car_color = new THREE.Color(selected_color);
+    // remove the existing car
+    scene.remove(car);
+    //Pace.restart()
+    // LoadObject with new car
+    loadObject();
+
+  });
+
+  // Click function for logos
+  $('.controls-logo-gallery').on('click', '.logo-item', function () {
+    // console.log('image')
+    selected_image = $(this).find('img').attr("src");
+    if (selected_image.toString().indexOf('ico_noimage.png') != -1) {
+      selected_image = null;
+    }
+    $(this).css('border-color', 'blue');
+    scene.remove(car);
+    loadObject();
+  });
+
+  // Click function for logos
+  $('.controls-material-gallery').on('click', '.material-item', function () {
+    // console.log('image')
+
+    if (selected_materials.indexOf('ico_noimage') != -1) {
+      selected_materials = [];
       addedMaterails.materials.Default.visible = 1;
+    }
+    if (!$(this).hasClass('selected-mat')) {
+      selected_materials.push($(this).find('img').attr("src").replace(".png", "").replace("Files/pics/", ""));
+      $(this).addClass('selected-mat');
+    } else {
+      var removed_m = $(this).find('img').attr("src").replace(".png", "").replace("Files/pics/", "");
+      console.log(removed_m);
+      var index_rm = selected_materials.indexOf(removed_m);
+      selected_materials.splice(index_rm, 1);
+      $(this).removeClass('selected-mat');
+    }
 
-      for(m in selected_materials){
-        console.log(m)
-        console.log(selected_materials[m])
-        addedMaterails.materials[selected_materials[m]].visible = 1;
+    console.log(selected_materials);
 
+    for (a in addedMaterails.materials) {
+      addedMaterails.materials[a].visible = 0;
+    }
+    addedMaterails.materials.Default.visible = 1;
+
+    for (m in selected_materials) {
+      console.log(m)
+      console.log(selected_materials[m])
+      addedMaterails.materials[selected_materials[m]].visible = 1;
+
+    }
+
+  });
+
+  window.addEventListener('load', init);
+  animate();
+
+  // Load all logos
+  function loadImages() {
+    var folder = "logo-images/";
+    var dafault_img = "default/ico_noimage.png";
+    $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item default"> <img  src="' + folder + dafault_img + '"></div>');
+    for (var i in logos) {
+      $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item"> <img  src="' + folder + logos[i] + '"></div>');
+    }
+  }
+
+  // Load all materials
+  function loadMaterials() {
+    var folder = "Files/pics/";
+    var dafault_img = "default/ico_noimage.png";
+    $('.controls-material-gallery .row').append('<div class="col-md-2 material-item default"> <img  src="logo-images/' + dafault_img + '"></div>');
+    for (var i in materials) {
+      $('.controls-material-gallery .row').append('<div class="col-md-2 material-item"> <img  src="' + folder + materials[i] + '.png"></div>');
+    }
+  }
+
+  /**
+   * Init materials will hide and control materials that you can see on the frontend
+   *
+   */
+  function init_materials(materials) {
+    materials.materials.Default.visible = 0;
+    materials.materials.Default.color = null;
+    materials.materials.Default.alphaMap = null;
+
+    materials.materials.A.visible = 0;
+    materials.materials.A.color = null;
+    materials.materials.A.alphaMap = null;
+
+    materials.materials.B.visible = 0;
+    materials.materials.B.color = null;
+    materials.materials.B.alphaMap = null;
+
+    materials.materials.C.visible = 0;
+    materials.materials.C.color = null;
+    materials.materials.C.alphaMap = null;
+
+    materials.materials.D.visible = 0;
+    materials.materials.D.color = null;
+    materials.materials.D.alphaMap = null;
+
+    materials.materials.E.visible = 0;
+    materials.materials.E.color = null;
+    materials.materials.E.alphaMap = null;
+
+    materials.materials.F.visible = 0;
+    materials.materials.F.color = null;
+    materials.materials.F.alphaMap = null;
+  }
+
+  /**
+   *
+   * Main function that will load all materials and the object
+   */
+  function loadObject() {
+    //Pace.start();
+    var loader = new THREE.OBJLoader();
+
+    new THREE.MTLLoader().setPath('Files/').load('Apr_29_2020_CarA01.mtl', function (materials) {
+      // load a resource
+      if (selected_materials != null) {
+        materials.preload();
+
+        loader.setMaterials(materials);
       }
+
+      loader.load(
+          // resource URL
+          'Files/Apr_29_2020_CarA01.obj',
+          // called when resource is loaded
+          function (object) {
+            car = object;
+            init_materials(materials)
+            addedMaterails = materials;
+
+            var material_count = 0;
+            for (i in car.children) {
+              console.log(material_count);
+              if (car.children[i].material.color !== undefined) {
+                if (material_count > 287) {
+                  console.log(car.children[i]);
+                  car.children[i].material.color = car_color;
+                }
+
+              }
+              material_count++;
+
+              if (SELECTED && SELECTED.name == car.children[i].name) {
+                var texture = new THREE.TextureLoader().load('logo-images/fox-light-colors.png');
+                material = new THREE.MeshPhongMaterial({
+                  map: texture,
+                  transparent: true
+                });
+
+                //
+                position.copy(intersection.point);
+                orientation.copy(mouseHelper.rotation);
+                //            if (params.rotate) orientation.z = Math.random() * 2 * Math.PI;
+                //
+                var scale = params.minScale + Math.random() * ( params.maxScale - params.minScale );
+                size.set(scale, scale, scale);
+                //
+                //
+                var geometry = new THREE.DecalGeometry(car.children[i], position, orientation, size);
+                var m = new THREE.Mesh(geometry, material);
+
+                scene.add(m);
+                addLogos(car.children[i].uuid, m.uuid);
+                console.log(added_logos);
+
+              }
+            }
+
+            scene.add(car);
+            if (selected_materials != null && selected_materials.length != 0) {
+              for (m in selected_materials) {
+                console.log(m)
+                console.log(selected_materials[m]);
+                materials.materials[selected_materials[m]].visible = 1;
+              }
+            } else {
+              materials.materials.Default.visible = 1;
+
+            }
+
+          },
+
+          // called when loading is in progresses
+          function (xhr) {
+            //Pace.track();
+            console.log(( xhr.loaded / xhr.total * 100 ) + '% loaded');
+          },
+          // called when loading has errors
+          function (error) {
+            console.log('An error happened');
+          }
+      );
 
     });
 
-    window.addEventListener('load', init);
-    animate();
+  }
 
-    // Load all logos
-    function loadImages() {
-      var folder = "logo-images/";
-      var dafault_img = "default/ico_noimage.png";
-      $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item default"> <img  src="' + folder + dafault_img + '"></div>');
-      for (var i in logos) {
-        $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item"> <img  src="' + folder + logos[i] + '"></div>');
-      }
+  /**
+   * Add logo function
+   * @param component_uuid
+   * @param logo_uuid
+   */
+  function addLogos(component_uuid, logo_uuid) {
+    if (added_logos[component_uuid] !== undefined) {
+      added_logos[component_uuid].push(logo_uuid);
+    } else {
+      added_logos[component_uuid] = [];
+      added_logos[component_uuid].push(logo_uuid);
     }
-    // Load all logos
-    function loadMaterials() {
-      var folder = "Files/pics/";
-      var dafault_img = "default/ico_noimage.png";
-      $('.controls-material-gallery .row').append('<div class="col-md-2 material-item default"> <img  src="logo-images/' + dafault_img + '"></div>');
-      for (var i in materials) {
-        $('.controls-material-gallery .row').append('<div class="col-md-2 material-item"> <img  src="' + folder + materials[i] + '.png"></div>');
-      }
-    }
+  }
 
-    function loadObject() {
-      //Pace.start();
-      var loader = new THREE.OBJLoader();
-
-        new THREE.MTLLoader()
-        .setPath( 'Files/')
-        .load( 'CarA01.mtl', function ( materials ) {
-          // load a resource
-          if (selected_materials != null) {
-            materials.preload();
-
-            loader.setMaterials(materials);
-          }
-
-          loader.load(
-              // resource URL
-              'Files/CarA01.obj',
-              // called when resource is loaded
-              function (object) {
-
-
-
-                car = object;
-
-                materials.materials.Default.visible = 1;
-                materials.materials.Default.color = null;
-                materials.materials.Default.alphaMap = null;
-
-                materials.materials.A.visible = 0;
-                materials.materials.A.color = null;
-                materials.materials.A.alphaMap = null;
-
-                materials.materials.B.visible = 0;
-                materials.materials.B.color = null;
-                materials.materials.B.alphaMap = null;
-
-                materials.materials.C.visible = 0;
-                materials.materials.C.color = null;
-                materials.materials.C.alphaMap = null;
-
-                materials.materials.D.visible = 0;
-                materials.materials.D.color = null;
-                materials.materials.D.alphaMap = null;
-
-                materials.materials.E.visible = 0;
-                materials.materials.E.color = null;
-                materials.materials.E.alphaMap = null;
-
-                materials.materials.F.visible = 0;
-                materials.materials.F.color = null;
-                materials.materials.F.alphaMap = null;
-
-                addedMaterails = materials;
-
-
-                for (i in car.children) {
-                  if (car.children[i].material.color !== undefined) {
-                    car.children[i].material.color = car_color;
-                  }
-                }
-
-                scene.add(car);
-                if (selected_materials != null  && selected_materials.length != 0) {
-                  for (m in selected_materials) {
-                    console.log(m)
-                    console.log(selected_materials[m]);
-                    materials.materials[selected_materials[m]].visible = 1;
-                  }
-                } else {
-                  materials.materials.Default.visible = 1;
-
-                }
-
-
-
-
-              },
-
-              // called when loading is in progresses
-              function (xhr) {
-                  //Pace.track();
-                console.log(( xhr.loaded / xhr.total * 100 ) + '% loaded');
-//
-
-
-              },
-              // called when loading has errors
-              function (error) {
-
-                console.log('An error happened');
-
-              }
-          );
-
-
-
-        });
-
-    }
-
-    function addLogos(component_uuid, logo_uuid) {
-      if (added_logos[component_uuid] !== undefined) {
-        added_logos[component_uuid].push(logo_uuid);
-      } else {
-        added_logos[component_uuid] = [];
-        added_logos[component_uuid].push(logo_uuid);
-      }
-    }
-
-    function removeLogo(component_uuid) {
-      for (i in added_logos) {
-        if (i == component_uuid) {
-          for (l in added_logos[i]) {
-            console.log(added_logos[i][l]);
-            for (c in scene.children) {
-              if (scene.children[c].uuid == added_logos[i][l]) {
-                scene.remove(scene.children[c]);
-              }
+  /**
+   * Remove logog function
+   * @param component_uuid
+   */
+  function removeLogo(component_uuid) {
+    for (i in added_logos) {
+      if (i == component_uuid) {
+        for (l in added_logos[i]) {
+          console.log(added_logos[i][l]);
+          for (c in scene.children) {
+            if (scene.children[c].uuid == added_logos[i][l]) {
+              scene.remove(scene.children[c]);
             }
-
           }
 
         }
-      }
 
-    }
-
-    // the initialize function
-    function init() {
-
-      // The renderer
-      renderer = new THREE.WebGLRenderer();
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(container.width(), container.height());
-      // Add the renderer to the container
-      container.append($(renderer.domElement));
-      scene = new THREE.Scene();
-
-      // Set the camera
-      camera = new THREE.PerspectiveCamera(8, container.width() / container.height(), 0.1, 500);
-      camera.position.x = 200;
-      camera.position.y = 95;
-      camera.position.z = 100;
-      camera.target = new THREE.Vector3();
-
-      var controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.minDistance = 50;
-      controls.maxDistance = 200;
-
-      car_color = new THREE.Color($('.rc-color-picker-trigger').css('background-color'));
-      // Add light //
-      scene.add(new THREE.AmbientLight(0x443333));
-
-      var light = new THREE.DirectionalLight(0xffddcc, 1);
-      light.position.set(1, 0.75, 0.5);
-      scene.add(light);
-
-      var light = new THREE.DirectionalLight(0xccccff, 1);
-      light.position.set(-1, 0.75, -0.5);
-      scene.add(light);
-
-      var geometry = new THREE.BufferGeometry();
-      geometry.setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
-
-      line = new THREE.Line(geometry, new THREE.LineBasicMaterial());
-      scene.add(line);
-
-      // Loading the object (not rendered yet)
-      loadObject();
-      raycaster = new THREE.Raycaster();
-      mouseHelper = new THREE.Mesh(new THREE.BoxBufferGeometry(0.25, 0.25, 1), new THREE.MeshNormalMaterial());
-      mouseHelper.visible = true;
-      scene.add(mouseHelper);
-
-      // CONTROLS
-      //      cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
-      //      cameraControls.addEventListener( 'change', render );
-
-      //      camera.lookAt( scene.position );
-      //      renderer.render( scene, camera );
-      //A event listner to mouse movements
-      document.addEventListener('mousemove', onDocumentMouseMove, false);
-      document.addEventListener('mousedown', onDocumentMouseDown, false);
-      //      window.addEventListener( 'resize', onWindowResize, false );
-      // Call to load logos
-
-      loadMaterials();
-    }
-
-    function onDocumentMouseMove(event) {
-      //      mouseX = ( event.clientX - windowHalfX ) / 2;
-      //      mouseY = ( event.clientY - windowHalfY ) / 2;
-
-      //      if (isOnCanvas && mouseDown) {
-      //        mouseX = (event.clientX / window.innerWidth) * (container.width() / 120);
-      //        mouseY = (event.clientY / window.innerHeight) * (container.height() / 120);
-      //      }
-      //
-      //      //      mouse.x = (event.clientX / container.width()) ;
-      //      //      mouse.y = (event.clientY / container.height()) ;
-      if (!mouseDown) {
-        mouse.x = ( event.clientX / container.width() ) * 2 - 1;
-        mouse.y = -( event.clientY / container.height() ) * 2 + 1;
       }
     }
 
-    function onDocumentMouseDown(event) {
+  }
 
-      var vector = new THREE.Vector3(( event.clientX / container.width() ) * 2 - 1, -( event.clientY / container.height() ) * 2 + 1, 0.5);
-      vector = vector.unproject(camera);
+  /**
+   * Init function for the entire script
+   */
+  function init() {
 
-      var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+    // The renderer
+    renderer = new THREE.WebGLRenderer();
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(container.width(), container.height());
+    // Add the renderer to the container
+    container.append($(renderer.domElement));
+    scene = new THREE.Scene();
 
-      var intersects = raycaster.intersectObjects(car.children, true);
+    // Set the camera
+    camera = new THREE.PerspectiveCamera(8, container.width() / container.height(), 0.1, 500);
+    camera.position.x = 200;
+    camera.position.y = 95;
+    camera.position.z = 100;
+    camera.target = new THREE.Vector3();
 
+    var controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.minDistance = 50;
+    controls.maxDistance = 200;
+
+    car_color = new THREE.Color('rgb(36, 141, 252)');
+    // Add light //
+    scene.add(new THREE.AmbientLight(0x443333));
+
+    var light = new THREE.DirectionalLight(0xffddcc, 1);
+    light.position.set(1, 0.75, 0.5);
+    scene.add(light);
+
+    var light = new THREE.DirectionalLight(0xccccff, 1);
+    light.position.set(-1, 0.75, -0.5);
+    scene.add(light);
+
+    var geometry = new THREE.BufferGeometry();
+    geometry.setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+
+    line = new THREE.Line(geometry, new THREE.LineBasicMaterial());
+    scene.add(line);
+
+    // Loading the object (not rendered yet)
+    loadObject();
+    raycaster = new THREE.Raycaster();
+    mouseHelper = new THREE.Mesh(new THREE.BoxBufferGeometry(0.25, 0.25, 1), new THREE.MeshNormalMaterial());
+    mouseHelper.visible = true;
+    scene.add(mouseHelper);
+
+    // CONTROLS
+    //      cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+    //      cameraControls.addEventListener( 'change', render );
+
+    //      camera.lookAt( scene.position );
+    //      renderer.render( scene, camera );
+    //A event listner to mouse movements
+    document.addEventListener('mousemove', onDocumentMouseMove, false);
+    document.addEventListener('mousedown', onDocumentMouseDown, false);
+    //      window.addEventListener( 'resize', onWindowResize, false );
+    // Call to load logos
+
+    loadMaterials();
+  }
+
+  /**
+   * Mouse movement handler
+   * @param event
+   */
+  function onDocumentMouseMove(event) {
+    if (!mouseDown) {
+      mouse.x = ( event.clientX / container.width() ) * 2 - 1;
+      mouse.y = -( event.clientY / container.height() ) * 2 + 1;
+    }
+  }
+
+  /**
+   * Mouse click handler
+   * @param event
+   */
+  function onDocumentMouseDown(event) {
+
+    var vector = new THREE.Vector3(( event.clientX / container.width() ) * 2 - 1, -( event.clientY / container.height() ) * 2 + 1, 0.5);
+    vector = vector.unproject(camera);
+
+    var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+    copied_array = car.children.slice();
+    diced_array = copied_array.splice(289, 335);
+    console.log(car.children);
+    var intersects = raycaster.intersectObjects(diced_array, true);
+
+    if (intersects.length > 0) {
+      if (SELECTED !== intersects[0].object && intersects[0].object.material.color !== undefined) {
+        var p = intersects[0].point;
+        intersection.point.copy(p);
+        SELECTED = intersects[0].object;
+        SELECTED.material.color = new THREE.Color('red');
+        loadObject();
+        console.log(SELECTED)
+        SELECTED_ORIGINAL_STATE = SELECTED;
+
+        mouseHelper.position.copy(p);
+        intersection.point.copy(p);
+        var n = intersects[0].face.normal.clone();
+        n.transformDirection(SELECTED.matrixWorld);
+        n.multiplyScalar(10);
+        n.add(intersects[0].point);
+        intersection.normal.copy(intersects[0].face.normal);
+        mouseHelper.lookAt(n);
+      }
+    }
+
+  }
+
+  /**
+   * Animate function
+   */
+  function animate() {
+    requestAnimationFrame(animate);
+    render();
+
+  }
+
+  /**
+   * Render function
+   */
+  function render() {
+    if (camera.position.y < 0) {
+      camera.position.y = 0;
+    }
+    camera.lookAt(scene.position);
+
+    raycaster.setFromCamera(mouse, camera);
+    copied_array = car.children.slice();
+    diced_array = copied_array.splice(289, 335);
+    if (!mouseDown) {
+      var intersects = raycaster.intersectObjects(diced_array, true);
       if (intersects.length > 0) {
-        if (SELECTED !== intersects[0].object && intersects[0].object.material.color !== undefined) {
-          //          if (SELECTED) {
-          //            SELECTED_ORIGINAL_STATE.material.transparent = false;
-          //            SELECTED_ORIGINAL_STATE.material.opacity = 1;
-          //          }
-          var p = intersects[0].point;
-          intersection.point.copy(p);
-          SELECTED = intersects[0].object;
-          SELECTED_ORIGINAL_STATE = SELECTED;
 
-          mouseHelper.position.copy(p);
-          intersection.point.copy(p);
-          var n = intersects[0].face.normal.clone();
-          n.transformDirection(SELECTED.matrixWorld);
-          n.multiplyScalar(10);
-          n.add(intersects[0].point);
-          intersection.normal.copy(intersects[0].face.normal);
-          mouseHelper.lookAt(n);
-        }
-      }
-
-    }
-
-    function animate() {
-      requestAnimationFrame(animate);
-      //      car.rotation.x += 0.01;
-
-      //      car.rotation.y = mouseX;
-
-      //car.rotation.x = mouseY;
-
-      render();
-
-    }
-
-    function render() {
-      //      camera.position.x += ( mouseX - camera.position.x ) * .05;
-      //      camera.position.y += ( - mouseY - camera.position.y ) * .05;
-
-      //      console.log(camera.position);
-      if (!car) return;
-      if (camera.position.y < 0) {
-        camera.position.y = 0;
-      }
-      camera.lookAt(scene.position);
-
-      raycaster.setFromCamera(mouse, camera);
-      // console.log(scene.children);
-      if (!mouseDown) {
-        var intersects = raycaster.intersectObjects(car.children, true);
-        if (intersects.length > 0) {
-
-          if (INTERSECTED !== intersects[0].object && intersects[0].object.material.color !== undefined && (intersects[0].object.name.indexOf('Tube') === -1)) {
-            if (INTERSECTED) {
-              INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
-            }
-            INTERSECTED = intersects[0].object;
-            INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-            INTERSECTED.material.emissive.setHex(0xff0000);
-          }
-        } else {
+        if (INTERSECTED !== intersects[0].object && intersects[0].object.material.color !== undefined && (intersects[0].object.name.indexOf('Tube') === -1)) {
           if (INTERSECTED) {
             INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
           }
-          INTERSECTED = null;
+          INTERSECTED = intersects[0].object;
+          INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+          INTERSECTED.material.emissive.setHex(0xff0000);
         }
+      } else {
+        if (INTERSECTED) {
+          INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+        }
+        INTERSECTED = null;
       }
-
-      renderer.render(scene, camera);
     }
 
+    renderer.render(scene, camera);
+  }
 
-    var exporter = new THREE.ColladaExporter();
-    function exportCollada() {
-      var result = exporter.parse( car );
 
-      saveString( result.data, 'myfile.dae' );
-      result.textures.forEach( tex => {
-        saveArrayBuffer( tex.data, `${ tex.name }.${ tex.ext }` );
-    });
-    }
 
-    function save( blob, filename ) {
-      link.href = URL.createObjectURL( blob );
-      link.download = filename;
-      link.click();
-    }
-    function saveString( text, filename ) {
-      save( new Blob( [ text ], { type: 'text/plain' } ), filename );
-    }
-    function saveArrayBuffer( buffer, filename ) {
-      save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
-    }
+  function save(blob, filename) {
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+  }
 
-    var link = document.createElement( 'a' );
-    link.style.display = 'none';
-    document.body.appendChild( link );
+  function saveString(text, filename) {
+    save(new Blob([text], {type: 'text/plain'}), filename);
+  }
 
-  </script>
+  function saveArrayBuffer(buffer, filename) {
+    save(new Blob([buffer], {type: 'application/octet-stream'}), filename);
+  }
+
+  var link = document.createElement('a');
+  link.style.display = 'none';
+  document.body.appendChild(link);
+
+</script>
 
 </body>
 </html>
