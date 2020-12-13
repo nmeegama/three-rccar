@@ -1,0 +1,45 @@
+body {
+    font-family: Monospace;
+    margin: 0px;
+    overflow: hidden;
+}
+
+.controls__color-palette {
+    margin: 10px;
+}
+
+.controls__color-palette-item {
+    min-width: 34px;
+    min-height: 4em;
+    border-radius: 2px;
+    cursor: pointer;
+    margin: 4px;
+}
+
+.rc-color-picker-wrap {
+    display: inline-block;
+    margin: 10px;
+}
+
+.controls__color-current .rc-color-picker-trigger {
+    min-height: 4em;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+.controls-logo-gallery img {
+    width: 100%;
+}
+
+.logo-item {
+    border: solid 1px #1b1b1b;
+}
+
+#info a,
+.button {
+    color: #f00;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+}
