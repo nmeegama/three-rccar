@@ -1,10 +1,20 @@
-let scene, camera, renderer, raycaster;
+let scene, camera, renderer, raycaster, colladaDownloadLink;
 
 const container = $('#car');
 const logos = [
-    'fox-light-colors.png',
+    /* 'fox-light-colors.png',
     'rc_logo.png',
-    'Motul_logo.png'
+    'Motul_logo.png', */
+    'TSKB Silver.png',
+    'Team Kraken Silver.png',
+    'RC Star Silver.png',
+    'Method Race Silver.png',
+    'Kraken logo silver.png',
+    'Fiberwerx Silver.png',
+    'Castrol Silver.png',
+    'BF Goodrich silver.png',
+    'Baja Designs.png',
+    'Fiberwerx Silver.png'
 ];
 const car = {
     model: "3d-assets/Apr_29_2020_CarA01.obj",
@@ -16,11 +26,26 @@ const car = {
         intersect: null,
         mesh: null,
         prevHex: null,
+        decal: null,
         status: false
-    }
+    },
+    /* decalPositions: [
+        {
+            meshName: 'bodypanel60',
+            position: new THREE.Vector3(2.5729999542236346, 0.5528489172720067, -1.17313083406363),
+            rotation: new THREE.Euler( 0, 1.5707963267948966, 0, 'XYZ' )
+        },
+        {
+            meshName: 'bodypanel60',
+            position: new THREE.Vector3(2.5729999542236346, 0.5528489172720067, -1.17313083406363),
+            rotation: new THREE.Euler( 0, 1.5707963267948966, 0, 'XYZ' )
+        }
+    ] */
+    decalPositions: {"test.png":[{"meshName":"","position":{"x":0,"y":0,"z":0},"rotation":{"x":0,"y":0,"z":0}}],"img/logo-images/Kraken logo silver.png":[{"id":358,"meshName":"bodypanel52","position":{"x":0.0004310155688373798,"y":2.934499979019164,"z":0.7715247988135783},"rotation":{"x":-1.57069632679523,"y":0,"z":0}},{"id":360,"meshName":"bodypanel58","position":{"x":-2.1579999923706055,"y":2.699102475396997,"z":-2.2359135378765664},"rotation":{"x":0,"y":-1.5707963267948966,"z":0}},{"id":362,"meshName":"bodypanel50","position":{"x":2.2330000400543213,"y":2.7965831581781337,"z":-2.092511680812768},"rotation":{"x":0,"y":1.5707963267948966,"z":0}},{"id":364,"meshName":"bodypanel60","position":{"x":2.572999954223633,"y":-0.5640889764496921,"z":1.7173904311023733},"rotation":{"x":0,"y":1.5707963267948966,"z":0}},{"id":366,"meshName":"bodypanel62","position":{"x":-2.5269999504089338,"y":-0.5854811701136623,"z":2.1273523412767883},"rotation":{"x":0,"y":-1.5707963267948966,"z":0}}],"img/logo-images/Castrol Silver.png":[{"id":370,"meshName":"bodypanel62","position":{"x":-2.5269999504089338,"y":0.39504632253657324,"z":-1.1634344282698232},"rotation":{"x":0,"y":-1.5707963267948966,"z":0}},{"id":374,"meshName":"bodypanel60","position":{"x":2.5729999542236346,"y":0.5738476552763472,"z":-1.118769966690901},"rotation":{"x":0,"y":1.5707963267948966,"z":0}}],"img/logo-images/Team Kraken Silver.png":[{"id":384,"meshName":"bodypanel57","position":{"x":2.381752774983555,"y":0.606332979897069,"z":4.846941964270666},"rotation":{"x":0.004645755096990098,"y":1.3549213883691724,"z":-0.00453792561993002}},{"id":388,"meshName":"bodypanel55","position":{"x":-2.3257362400417456,"y":0.649424249083703,"z":5.047487464844798},"rotation":{"x":0.006840743168798615,"y":-1.3185270138371232,"z":0.006624229757749517}}],"img/logo-images/Fiberwerx Silver.png":[{"id":390,"meshName":"bodypanel62","position":{"x":-2.5269999504089355,"y":-0.7017760488325511,"z":0.12398499885700698},"rotation":{"x":0,"y":-1.5707963267948966,"z":0}},{"id":392,"meshName":"bodypanel60","position":{"x":2.572999954223633,"y":-0.7822678686992619,"z":0.5501389918968371},"rotation":{"x":0,"y":1.5707963267948966,"z":0}}]}
 };
 const currentDecal = {
     src: '',
+    material: null,
     status: false
 };
 
@@ -52,18 +77,18 @@ function createScene() {
 };
 
 function initLighting() {
-    const ambientLight = new THREE.AmbientLight(0x443333);
+    const ambientLight = new THREE.AmbientLight(0x404040);
     scene.add(ambientLight);
 
-    const directionalLight1 = new THREE.DirectionalLight(0xffddcc, 1);
+    const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight1.position.set(1, 0.75, 0.5);
     scene.add(directionalLight1);
 
-    const directionalLight2 = new THREE.DirectionalLight(0xccccff, 1);
+    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight2.position.set(-1, 0.75, -0.5);
     scene.add(directionalLight2);
 
-    const pointLight = new THREE.PointLight(0xffaa00, 2);
+    const pointLight = new THREE.PointLight(0xff0000, 2);
     pointLight.position.set(2000, 1200, 10000);
     scene.add(pointLight);
 };
@@ -219,7 +244,10 @@ function loadImages() {
     const dafault_img = "default/ico_noimage.png";
     $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item default"> <img  src="' + folder + dafault_img + '"></div>');
     for (const i in logos) {
-        $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item"> <img  src="' + folder + logos[i] + '"></div>');
+        console.log(logos[i] + ' in ' , car.decalPositions);
+        if (car.decalPositions[`${folder}${logos[i]}`]) {
+            $('.controls-logo-gallery .row').append('<div class="col-md-3 logo-item"> <img  src="' + folder + logos[i] + '"></div>');
+        }
     }
 }
 
@@ -261,20 +289,34 @@ function getIntersects(clientX, clientY, meshes) {
 
 function clearMeshHighlights() {
     if (car.highlighter.status) {
-        car.highlighter.mesh.material.emissive.setHex(car.highlighter.prevHex);
+        // car.highlighter.mesh.material.emissive.setHex(car.highlighter.prevHex);
+        // scene.remove(car.highlighter.decal);
+        // car.highlighter.decal.visible = false;
         car.highlighter.status = false;
     }
 };
 
 function setHighlighter(intersect) {
+    // const meshName = intersect.object.name;
+    // const positionObj = _.find(car.decalPositions, {meshName});
+
+    // const size = new THREE.Vector3(1, 1, 1);
+
+    // const material = currentDecal.material.clone();
+    // material.needsUpdate = true;
+    // material.emissive.setHex(0xff0000);
+
+    // const decal = new THREE.Mesh(new THREE.DecalGeometry(intersect.object, positionObj.position, positionObj.rotation, size), material);
+    // scene.add(decal);
+
+    intersect.object.visible = true;
+
+    car.highlighter.decal = intersect.object;
+
     car.highlighter.intersect = intersect;
     car.highlighter.mesh = intersect.object;
     car.highlighter.prevHex = intersect.object.material.emissive.getHex();
     car.highlighter.status = true;
-}
-
-function addDecalToMesh() {
-
 }
 
 function getMeshCenter(mesh) {
@@ -289,18 +331,78 @@ function resetLogoOutlines() {
     }
 }
 
+function getDecalMaterial(src) {
+    const texture = new THREE.TextureLoader().load(src);
+    return new THREE.MeshPhongMaterial({
+        side: THREE.FrontSide,
+        specular: 0x444444,
+        map: texture,
+        normalScale: new THREE.Vector2(1, 1),
+        shininess: 30,
+        transparent: true,
+        depthTest: true,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: - 4,
+        wireframe: false,
+    });
+}
+
+function addDecal(mesh, position, rotation, size, material) {
+    const decal = new THREE.Mesh(new THREE.DecalGeometry(mesh, position, rotation, size), material);
+    scene.add(decal);
+    return decal;
+}
+
+function addAllowedLocations() {
+    const decalPositions = car.decalPositions[currentDecal.src];
+
+    if (car.decalPositions[currentDecal.src]) {
+        currentDecal.allowedLocations = [];
+
+        const size = new THREE.Vector3(1, 1, 1);
+        const material = currentDecal.material.clone();
+        material.emissive.setHex(0xff0000);
+        
+        decalPositions.forEach(positionItem => {
+
+            const position = new THREE.Vector3(positionItem.position.x, positionItem.position.y, positionItem.position.z);
+            const rotation = new THREE.Euler( positionItem.rotation.x, positionItem.rotation.y, positionItem.rotation.z, 'XYZ');
+
+            if (!car.decals || !_.find(car.decals, {id: positionItem.id})) {          
+                const decal = addDecal(scene.getObjectByName(positionItem.meshName), position, rotation, size, material);
+                decal.userData.id = positionItem.id;
+                // decal.visible = false;
+                currentDecal.allowedLocations.push(decal); 
+            }
+        });
+    }
+}
+
+function resetDecalSelector() {
+    (currentDecal.allowedLocations || []).forEach(decal => {
+        scene.remove(decal);
+    });
+    currentDecal.allowedLocations = [];
+    currentDecal.src = null;
+    currentDecal.material = null;
+    currentDecal.status = false;
+}
+
 function addEventListeners() {
 
     // On decal select event listener
     $('.controls-logo-gallery').on('click', '.logo-item', function () {
         resetLogoOutlines();
         if (!$(this).hasClass('default')) {
+            resetDecalSelector();
             currentDecal.src = $(this).find('img').attr("src");
+            currentDecal.material = getDecalMaterial(currentDecal.src);
+            addAllowedLocations();
             currentDecal.status = true;
             $(this).css('border-color', 'blue');
         } else {
-            currentDecal.src = null;
-            currentDecal.status = false;
+            resetDecalSelector();
         }
     });
 
@@ -325,64 +427,60 @@ function addEventListeners() {
 
     container.on('mousemove', (event) => {
         clearMeshHighlights();
-        const intersects = getIntersects(event.clientX, event.clientY, car.object.children);
-        if (intersects.length > 0) {
+        /* const meshesList = [];
+        car.decalPositions.forEach(position => {
+            if (!_.find(car.decals, {meshName: position.meshName})) {
+                meshesList.push(scene.getObjectByName(position.meshName));
+            }
+        }); */
+        const intersects = getIntersects(event.clientX, event.clientY, currentDecal.allowedLocations || []);
+        if (intersects.length > 0/*  && intersects[0] !== car.highlighter.mesh */) {
             setHighlighter(intersects[0]);
-            console.log(intersects[0].object.name);
-            intersects[0].object.material.emissive.setHex(0xff0000);
+            // console.log(intersects[0].object.name);
+            // intersects[0].object.material.emissive.setHex(0xff0000);
         }
     });
 
     container.on("click", (event) => {
         if (currentDecal.status && car.highlighter.status) {
 
+
             const { face, point, object } = car.highlighter.intersect;
 
-            const center = getMeshCenter(object);
+            // const center = getMeshCenter(object);
 
-            if (car.decals && _.find(car.decals, { meshID: object.uuid })) {
-                // alert('This surface already has a decal');
-                return;
-            }
+            // if (car.decals && _.find(car.decals, { meshID: object.uuid })) {
+            //     return;
+            // }
 
-            const normal = face.normal.clone();
-            normal.transformDirection(object.matrixWorld);
-            normal.add(center);
+            // const normal = face.normal.clone();
+            // normal.transformDirection(object.matrixWorld);
+            // normal.add(center);
 
             // To get the proper rotation of the face
-            const orientationHelper = new THREE.Mesh(new THREE.BoxBufferGeometry(0.01, 0.0, 1), new THREE.MeshNormalMaterial());
-            orientationHelper.position.copy(center);
-            orientationHelper.lookAt(normal);
+            // const orientationHelper = new THREE.Mesh(new THREE.BoxBufferGeometry(0.01, 0.0, 1), new THREE.MeshNormalMaterial());
+            // orientationHelper.position.copy(center);
+            // orientationHelper.lookAt(normal);
 
             // Logo size scaling
-            const size = new THREE.Vector3(1, 1, 1);
-
-            // const material = decal.material.clone();
-
-            const texture = new THREE.TextureLoader().load(currentDecal.src);
-            const material = new THREE.MeshBasicMaterial({
-                side: THREE.FrontSide,
-                specular: 0x444444,
-                map: texture,
-                normalScale: new THREE.Vector2(1, 1),
-                shininess: 30,
-                transparent: true,
-                depthTest: true,
-                depthWrite: false,
-                polygonOffset: true,
-                polygonOffsetFactor: - 4,
-                wireframe: false,
-            })
+            // const size = new THREE.Vector3(1, 1, 1);
+            
+            const material = currentDecal.material.clone();
 
             // addBal(center);
 
-            const m = new THREE.Mesh(new THREE.DecalGeometry(object, center, orientationHelper.rotation, size), material);
+            const m = new THREE.Mesh(car.highlighter.decal.geometry, material);
+            m.userData.id = car.highlighter.decal.userData.id;
             scene.add(m);
 
             car.decals.push({
+                id: car.highlighter.decal.userData.id,
                 meshID: object.uuid,
+                meshName: object.name,
                 decal: m
             });
+
+            clearMeshHighlights();
         }
     });
 
@@ -399,6 +497,10 @@ function addEventListeners() {
         } else {
             hideMaterial(material);
         }
+    });
+
+    $('.export-btn').on('click', function () {
+        exportCollada();
     });
 };
 
@@ -437,6 +539,30 @@ function init() {
     loadMaterialEls();
 
     animate();
+}
+
+function download(blob, name) {
+    colladaDownloadLink.href = URL.createObjectURL( blob );
+    colladaDownloadLink.download = name;
+    colladaDownloadLink.click();
+}
+
+function exportCollada() {
+
+    colladaDownloadLink = document.createElement('a');
+    colladaDownloadLink.style.display = 'none';
+    document.body.appendChild(colladaDownloadLink);
+
+    const exporter = new THREE.ColladaExporter();
+
+    // Parse the input and generate the ply output
+    const result = exporter.parse( car.object );
+
+    download(new Blob( [ result.data ], { type: 'text/plain' } ), 'test-collada.dae');
+
+    result.textures.forEach( tex => {
+        download( new Blob( [ tex.data ], { type: 'application/octet-stream' } ), `${ tex.name }.${ tex.ext }` );
+    } );    
 }
 
 $(function () {
