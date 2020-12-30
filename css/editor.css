@@ -1,7 +1,7 @@
 body {
     font-family: Monospace;
     margin: 0px;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
 .controls__color-palette {
