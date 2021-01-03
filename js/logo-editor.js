@@ -38,7 +38,7 @@ const currentDecal = {
     status: false
 };
 
-const decalPositions = {
+let decalPositions = {
     'test.png': [
         {
             meshName: '',
@@ -315,9 +315,9 @@ function addDecalToList(id, meshName, position, rotation) {
         rotation: {x: rotation.x, y: rotation.y, z: rotation.z}
     });
 
-    addListItem(id, `mesh: ${meshName} x: ${Math.floor(position.x)} y: ${Math.floor(position.z)} z: ${Math.floor(position.z)}`);
+    saveDecalPos();
 
-    console.log(JSON.stringify(decalPositions));
+    addListItem(id, `mesh: ${meshName} x: ${Math.floor(position.x)} y: ${Math.floor(position.z)} z: ${Math.floor(position.z)}`);
 }
 
 function addDecal(mesh, position, rotation, size, material) {
@@ -355,6 +355,7 @@ function resetActivePosListItem() {
 
 function removePosItem(id, node) {
     _.remove(decalPositions[currentDecal.src], {id});
+    saveDecalPos();
     const decalMesh = scene.getObjectById(id);
     scene.remove(decalMesh);
     _.remove(displayedDecals, decalMesh);
@@ -463,6 +464,19 @@ function init() {
     loadImages();
 
     animate();
+
+    loadDecalPos();
+}
+
+function loadDecalPos() {
+    const pos = localStorage.getItem('decalPositions');
+    if (pos) {
+        decalPositions = JSON.parse(pos);
+    }
+}
+
+function saveDecalPos() {
+    localStorage.setItem('decalPositions', JSON.stringify(decalPositions));
 }
 
 $(function () {

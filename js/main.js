@@ -41,7 +41,7 @@ const car = {
             rotation: new THREE.Euler( 0, 1.5707963267948966, 0, 'XYZ' )
         }
     ] */
-    decalPositions: {"test.png":[{"meshName":"","position":{"x":0,"y":0,"z":0},"rotation":{"x":0,"y":0,"z":0}}],"img/logo-images/Kraken logo silver.png":[{"id":358,"meshName":"bodypanel52","position":{"x":0.0004310155688373798,"y":2.934499979019164,"z":0.7715247988135783},"rotation":{"x":-1.57069632679523,"y":0,"z":0}},{"id":360,"meshName":"bodypanel58","position":{"x":-2.1579999923706055,"y":2.699102475396997,"z":-2.2359135378765664},"rotation":{"x":0,"y":-1.5707963267948966,"z":0}},{"id":362,"meshName":"bodypanel50","position":{"x":2.2330000400543213,"y":2.7965831581781337,"z":-2.092511680812768},"rotation":{"x":0,"y":1.5707963267948966,"z":0}},{"id":364,"meshName":"bodypanel60","position":{"x":2.572999954223633,"y":-0.5640889764496921,"z":1.7173904311023733},"rotation":{"x":0,"y":1.5707963267948966,"z":0}},{"id":366,"meshName":"bodypanel62","position":{"x":-2.5269999504089338,"y":-0.5854811701136623,"z":2.1273523412767883},"rotation":{"x":0,"y":-1.5707963267948966,"z":0}}],"img/logo-images/Castrol Silver.png":[{"id":370,"meshName":"bodypanel62","position":{"x":-2.5269999504089338,"y":0.39504632253657324,"z":-1.1634344282698232},"rotation":{"x":0,"y":-1.5707963267948966,"z":0}},{"id":374,"meshName":"bodypanel60","position":{"x":2.5729999542236346,"y":0.5738476552763472,"z":-1.118769966690901},"rotation":{"x":0,"y":1.5707963267948966,"z":0}}],"img/logo-images/Team Kraken Silver.png":[{"id":384,"meshName":"bodypanel57","position":{"x":2.381752774983555,"y":0.606332979897069,"z":4.846941964270666},"rotation":{"x":0.004645755096990098,"y":1.3549213883691724,"z":-0.00453792561993002}},{"id":388,"meshName":"bodypanel55","position":{"x":-2.3257362400417456,"y":0.649424249083703,"z":5.047487464844798},"rotation":{"x":0.006840743168798615,"y":-1.3185270138371232,"z":0.006624229757749517}}],"img/logo-images/Fiberwerx Silver.png":[{"id":390,"meshName":"bodypanel62","position":{"x":-2.5269999504089355,"y":-0.7017760488325511,"z":0.12398499885700698},"rotation":{"x":0,"y":-1.5707963267948966,"z":0}},{"id":392,"meshName":"bodypanel60","position":{"x":2.572999954223633,"y":-0.7822678686992619,"z":0.5501389918968371},"rotation":{"x":0,"y":1.5707963267948966,"z":0}}]}
+    decalPositions: {"test.png":[{"meshName":"","position":{"x":0,"y":0,"z":0},"rotation":{"x":0,"y":0,"z":0}}]}
 };
 const currentDecal = {
     src: '',
@@ -534,6 +534,9 @@ function init() {
 
     // document.addEventListener('mousemove', onDocumentMouseMove, false);
     // document.addEventListener('mousedown', onDocumentMouseDown, false);
+    
+    loadDecalPos();
+    
     loadImages();
 
     loadMaterialEls();
@@ -563,6 +566,13 @@ function exportCollada() {
     result.textures.forEach( tex => {
         download( new Blob( [ tex.data ], { type: 'application/octet-stream' } ), `${ tex.name }.${ tex.ext }` );
     } );    
+}
+
+function loadDecalPos() {
+    const pos = localStorage.getItem('decalPositions');
+    if (pos) {
+        car.decalPositions = JSON.parse(pos);
+    }
 }
 
 $(function () {
