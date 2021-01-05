@@ -18,10 +18,10 @@ const logos = [
     'Fiberwerx Silver.png'
 ];
 const car = {
-    model: "3d-assets/Apr_29_2020_CarA01.obj",
-    material: '3d-assets/Apr_29_2020_CarA01.mtl',
+    model: "3d-assets/new_object_update9.obj",
+    material: '3d-assets/new_object_update9.mtl',
     object: null,
-    color: new THREE.Color('rgb(36, 141, 252)'),
+    color: new THREE.Color('rgb(246, 25, 34)'),
     decals: [],
     highlighter: {
         intersect: null,
@@ -77,20 +77,24 @@ function createScene() {
 };
 
 function initLighting() {
-    const ambientLight = new THREE.AmbientLight(0x404040);
-    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+    directionalLight.position.set(0, 5, 0);
+    scene.add(directionalLight);
 
-    const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight1.position.set(1, 0.75, 0.5);
-    scene.add(directionalLight1);
-
-    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight2.position.set(-1, 0.75, -0.5);
+    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 2);
+    directionalLight2.position.set(0, -5, 0);
     scene.add(directionalLight2);
 
-    const pointLight = new THREE.PointLight(0xff0000, 2);
-    pointLight.position.set(2000, 1200, 10000);
-    scene.add(pointLight);
+    const directionalLight3 = new THREE.DirectionalLight(0xffffff, 2);
+    directionalLight3.position.set(6, -1, 0);
+    scene.add(directionalLight3);
+
+    const directionalLight4 = new THREE.DirectionalLight(0xffffff, 2);
+    directionalLight4.position.set(-6, -1, 0);
+    scene.add(directionalLight4);
+
+    const ambientLight = new THREE.AmbientLight( 0x404040 );
+    scene.add( ambientLight );
 };
 
 function createRenderer() {
@@ -103,6 +107,12 @@ function createRenderer() {
 
 function setupCameraControls() {
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = false;
+    controls.dampingFactor = 0.25;
+    controls.enableZoom = false;
+    controls.maxPolarAngle = Math.PI/2;
+    controls.minDistance = 7;
+    controls.maxDistance = 16;
     // controls.addEventListener('change', render);
     return controls;
 };
@@ -133,15 +143,22 @@ function loadObject() {
 
         materialCreator.preload();
         materials = { ...materialCreator.materials };
-        // loader.setMaterials(materialCreator);
+        loader.setMaterials(materialCreator);
 
         loader.load(car.model, (obj) => {
             getMaterialMappings(obj);
             initMaterials();
             car.object = obj;
+            obj.position.y = -2;
             console.log(obj);
             scene.add(obj);
+
             setMaterial('Default');
+            setMaterial('Tires');
+            setMaterial('misc');
+            setMaterial('grill');
+            changeVehicleColor(new THREE.Color('rgb(246, 25, 34)'));
+            
             addEventListeners();
 
         }, undefined, (error) => {
@@ -170,20 +187,26 @@ function getMaterialMappings(mesh) {
     }
 }
 
-/**
+/** TODO: REMOVE
  * When given a material name, looks for the meshes that uses the material and adds it
  * to the mesh
  * @param {*} name material name
  */
-function setMaterial(name) {
+function _setMaterial(name, updateColor = true) {
     if (materials[name] && materialMap[name]) {
         for (const objectId of materialMap[name]) {
             const mesh = scene.getObjectById(objectId, true);
 
+            if (mesh.name === 'bodypanel52_bodypanel52_Default') {
+                console.log('gotcha');
+            }
+
             // If this is the first time the material is assigned to mesh, assign a clone of the original material.
             if (!mesh.material.map) {
-                mesh.material = materials[name].clone();
-                mesh.material.color = car.color;
+                mesh.material = materials[name];
+                if (updateColor) {
+                    mesh.material.color = car.color;
+                }
             } else {
                 // If the mesh already has a copy of given material, toggle its visibility
                 mesh.material.visible = 1;
@@ -192,17 +215,23 @@ function setMaterial(name) {
     }
 }
 
-function hideMaterial(name) {
+/* function hideMaterial(name) {
     if (materials[name] && materialMap[name]) {
         for (const objectId of materialMap[name]) {
             const mesh = scene.getObjectById(objectId, true);
 
             if (mesh.material) {
-                /* mesh.material = materials['Default'].clone();
-                mesh.material.color = car.color; */
+                // mesh.material = materials['Default'].clone();
+                // mesh.material.color = car.color;
                 mesh.material.visible = 0;
             }
         }
+    }
+} */
+
+function hideMaterial(name) {
+    if (materials[name]) {
+        materials[name].visible = 0;
     }
 }
 
@@ -217,11 +246,12 @@ function initMaterials() {
             materials[key].color = null;
             materials[key].alphaMap = null;
         } */
+        materials[key].visible = 0;
         materials[key].alphaMap = null;
     }
 }
 
-function _setMaterial(name) {
+function setMaterial(name) {
     if (materials[name]) {
         materials[name].visible = 1;
     }
@@ -230,13 +260,19 @@ function _setMaterial(name) {
 function changeVehicleColor(color) {
     /* for (const key in materials) {
         materials[key].color = color;
-    } */
+    }; */
 
-    for (const mesh of car.object.children) {
-        if (mesh && mesh.material) {
-            mesh.material.color = color;
+    for(const name of ['A', 'B', 'C', 'D', 'E', 'F', 'Default']) {
+        if (materials[name]) {
+            materials[name].color = color;
         }
     }
+
+    /* for (const mesh of car.object.children) {
+        if (mesh && mesh.material && ['A', 'B', 'C', 'D', 'E', 'F', 'Default'].indexOf(mesh.material.name) !== -1) {
+            mesh.material.color = color;
+        }
+    } */
 };
 
 function loadImages() {
@@ -406,7 +442,7 @@ function addEventListeners() {
         const intersects = getIntersects(event.clientX, event.clientY, car.object.children);
         if (intersects.length > 0) {
             setHighlighter(intersects[0]);
-            intersects[0].object.material.emissive.setHex(0xff0000);
+            // intersects[0].object.material.emissive.setHex(0xffffff);
         }
     });
 
