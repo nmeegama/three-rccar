@@ -109,9 +109,9 @@ function setupCameraControls() {
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = false;
     controls.dampingFactor = 0.25;
-    controls.enableZoom = false;
+    controls.enableZoom = true;
     controls.maxPolarAngle = Math.PI/2;
-    controls.minDistance = 7;
+    controls.minDistance = 10;
     controls.maxDistance = 16;
     // controls.addEventListener('change', render);
     return controls;
