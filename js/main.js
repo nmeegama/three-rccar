@@ -159,7 +159,7 @@ function loadObject() {
             setMaterial('Tires');
             setMaterial('misc');
             setMaterial('grill');
-            changeVehicleColor(new THREE.Color('rgb(246, 25, 34)'));
+            changeVehicleColor(new THREE.Color('rgb(214, 207, 191)'));
             
             addEventListeners();
 
@@ -264,7 +264,7 @@ function changeVehicleColor(color) {
         materials[key].color = color;
     }; */
 
-    for(const name of ['A', 'B', 'C', 'D', 'E', 'F', 'Default']) {
+    for(const name of ['Default']) {
         if (materials[name]) {
             materials[name].color = color;
         }
