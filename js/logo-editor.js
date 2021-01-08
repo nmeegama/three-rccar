@@ -1,5 +1,7 @@
 let scene, camera, renderer, raycaster;
 
+const currVersion = 'v0.0.0.1';
+
 const container = $('#car');
 const decalListContainer = document.getElementById('decalPositionList');
 const logos = [
@@ -60,6 +62,7 @@ let displayedDecals = [];
 
 let materials = {};
 const materialMap = {};
+const bodyMeshes = [];
 
 function createCamera() {
     // Set the camera
@@ -175,6 +178,10 @@ function loadObject() {
 function getMaterialMappings(mesh) {
     for (const childMesh of mesh.children) {
         if (childMesh.material && childMesh.material.name) {
+
+            if (['C'].indexOf(childMesh.material.name) != -1) {
+                bodyMeshes.push(childMesh);
+            }
 
             if (materialMap[childMesh.material.name]) {
                 materialMap[childMesh.material.name].push(childMesh.id);
@@ -439,7 +446,7 @@ function addEventListeners() {
 
     container.on('mousemove', (event) => {
         clearMeshHighlights();
-        const intersects = getIntersects(event.clientX, event.clientY, car.object.children);
+        const intersects = getIntersects(event.clientX, event.clientY, bodyMeshes);
         if (intersects.length > 0) {
             setHighlighter(intersects[0]);
             // intersects[0].object.material.emissive.setHex(0xffffff);
@@ -482,6 +489,8 @@ function addEventListeners() {
 };
 
 function init() {
+    clearOnNewRelease();
+
     raycaster = new THREE.Raycaster();
     scene = createScene();
     camera = createCamera();
@@ -513,6 +522,14 @@ function loadDecalPos() {
 
 function saveDecalPos() {
     localStorage.setItem('decalPositions', JSON.stringify(decalPositions));
+}
+
+function clearOnNewRelease() {
+    const version = localStorage.getItem('version');
+    if (!version || version !== currVersion) {
+        localStorage.removeItem('decalPositions');
+        localStorage.setItem('version', currVersion);
+    }
 }
 
 $(function () {

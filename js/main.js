@@ -1,5 +1,7 @@
 let scene, camera, renderer, raycaster, colladaDownloadLink;
 
+const currVersion = 'v0.0.0.1';
+
 const container = $('#car');
 const logos = [
     /* 'fox-light-colors.png',
@@ -17,8 +19,8 @@ const logos = [
     'Fiberwerx Silver.png'
 ];
 const car = {
-    model: "3d-assets/new_object_update9.obj",
-    material: '3d-assets/new_object_update9.mtl',
+    model: "3d-assets/new_object_update11.obj",
+    material: '3d-assets/new_object_update11.mtl',
     object: null,
     color: new THREE.Color('rgb(246, 25, 34)'),
     decals: [],
@@ -555,6 +557,8 @@ function addBal(pos) {
 };
 
 function init() {
+    clearOnNewRelease();
+
     raycaster = new THREE.Raycaster();
     scene = createScene();
     camera = createCamera();
@@ -608,6 +612,14 @@ function loadDecalPos() {
     const pos = localStorage.getItem('decalPositions');
     if (pos) {
         car.decalPositions = JSON.parse(pos);
+    }
+}
+
+function clearOnNewRelease() {
+    const version = localStorage.getItem('version');
+    if (!version || version !== currVersion) {
+        localStorage.removeItem('decalPositions');
+        localStorage.setItem('version', currVersion);
     }
 }
 
