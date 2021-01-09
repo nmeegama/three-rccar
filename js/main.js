@@ -80,19 +80,19 @@ function createScene() {
 };
 
 function initLighting() {
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(0, 5, 0);
     scene.add(directionalLight);
 
-    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 2);
+    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight2.position.set(0, -5, 0);
     scene.add(directionalLight2);
 
-    const directionalLight3 = new THREE.DirectionalLight(0xffffff, 2);
+    const directionalLight3 = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight3.position.set(6, -1, 0);
     scene.add(directionalLight3);
 
-    const directionalLight4 = new THREE.DirectionalLight(0xffffff, 2);
+    const directionalLight4 = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight4.position.set(-6, -1, 0);
     scene.add(directionalLight4);
 
@@ -261,21 +261,11 @@ function setMaterial(name) {
 }
 
 function changeVehicleColor(color) {
-    /* for (const key in materials) {
-        materials[key].color = color;
-    }; */
-
     for(const name of ['Default']) {
         if (materials[name]) {
             materials[name].color = color;
         }
     }
-
-    /* for (const mesh of car.object.children) {
-        if (mesh && mesh.material && ['A', 'B', 'C', 'D', 'E', 'F', 'Default'].indexOf(mesh.material.name) !== -1) {
-            mesh.material.color = color;
-        }
-    } */
 };
 
 function loadImages() {

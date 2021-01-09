@@ -19,6 +19,16 @@ const logos = [
     'Baja Designs.png',
     'Fiberwerx Silver.png'
 ];
+
+const materialThumbNails = [
+    'A',
+    'B',
+    'C',
+    'D',
+    'E',
+    'F',
+];
+
 const car = {
     model: "3d-assets/new_object_update11.obj",
     material: '3d-assets/new_object_update11.mtl',
@@ -267,21 +277,11 @@ function setMaterial(name) {
 }
 
 function changeVehicleColor(color) {
-    /* for (const key in materials) {
-        materials[key].color = color;
-    }; */
-
     for(const name of ['Default']) {
         if (materials[name]) {
             materials[name].color = color;
         }
     }
-
-    /* for (const mesh of car.object.children) {
-        if (mesh && mesh.material && ['A', 'B', 'C', 'D', 'E', 'F', 'Default'].indexOf(mesh.material.name) !== -1) {
-            mesh.material.color = color;
-        }
-    } */
 };
 
 function loadImages() {
@@ -532,6 +532,25 @@ function getSizingContainer(size, id) {
 
 function addEventListeners() {
 
+    // On color select event listener
+    $('.controls__color-palette-item').on('click', function () {
+        const selectedColor = $(this).css('background-color');
+        // set the current color to the color clicked
+        $('.rc-color-picker-trigger').css('background-color', selectedColor);
+
+        car.color = new THREE.Color(selectedColor);
+        changeVehicleColor(car.color);
+    });
+
+    $('.controls__color-palette-item').on('click', function () {
+        const selectedColor = $(this).css('background-color');
+        // set the current color to the color clicked
+        $('.rc-color-picker-trigger').css('background-color', selectedColor);
+
+        car.color = new THREE.Color(selectedColor);
+        changeVehicleColor(car.color);
+    });
+
     // On decal select event listener
     $('.controls-logo-gallery').on('click', '.logo-item', function () {
         resetLogoOutlines();
@@ -598,7 +617,31 @@ function addEventListeners() {
             addDecalToList(uuid, object.name, point, orientationHelper.rotation);
         }
     });
+
+    $('.material-checkbox').on('click', function () {
+        const material = $(this).data('material');
+        const status = $(this).is(':checked');
+        if (status) {
+            setMaterial(material);
+        } else {
+            hideMaterial(material);
+        }
+    });
 };
+
+function loadMaterialEls() {
+    const folder = "3d-assets/pics/";
+    for (const i in materialThumbNails) {
+        const li = '<li class="list-group-item material-item d-flex">' +
+            '<img data-material="' + materialThumbNails[i] + '" src="' + folder + materialThumbNails[i] + '.png" style="width: 100px;border: 1px solid #ddd;border-radius: 4px;padding: 5px;width: 50px;" alt="..." class="img-thumbnail order-2">' +
+            '<div class="form-group form-check order-1">' +
+            '<input type="checkbox" data-material="' + materialThumbNails[i] + '" class="form-check-input material-checkbox" id="exampleCheck1">' +
+            '</div>' +
+            '<div class="order-3 ml-2">'+materialThumbNails[i]+'</div>' +
+            '</li>';
+        $('.controls-material-gallery').find('.list-group').append(li);
+    }
+}
 
 function init() {
     clearOnNewRelease();
@@ -620,6 +663,8 @@ function init() {
     // document.addEventListener('mousemove', onDocumentMouseMove, false);
     // document.addEventListener('mousedown', onDocumentMouseDown, false);
     loadImages();
+
+    loadMaterialEls();
 
     animate();
 

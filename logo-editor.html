@@ -30,44 +30,99 @@
     <div class="row">
       <div id="car" class="col-md-8 overflow-hidden" style="height: 800px"></div>
       <div class="col-md-4">
-        <div class="row mt-5">
-          <div class="controls-logo-gallery col-md-12">
-            <div class="row">
+        <div id="accordion">
+          <div class="card">
+            <div class="card-header" id="headingOne">
+              <h5 class="mb-0">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  Colors
+                </button>
+              </h5>
             </div>
-          </div>    
-        </div>
         
-        <div class="mt-5 d-none">
-          <hr>
-          <div class="row logo-sizing-container">
-            <div class="col-sm-2">
-              <p class="h6">Sizing :</p>
-            </div>
-            <div class="col-sm-4">
-              <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                  <span class="input-group-text" id="basic-addon1">Length</span>
+            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+              <div class="card-body">
+                <div class="row">
+                  <div class="controls__color-current col-md-2">
+                    <div class="row">
+                      <div class="controls__stitle col-md-12">Current</div>
+                      <div class="rc-color-picker-wrap col-md-12">
+                        <div class="rc-color-picker-trigger " unselectable="true"
+                          style="opacity: 1; background-color: rgb(255, 0, 0);"></div>
+                      </div>
+                    </div>
+                  </div>
+        
+                  <div class="controls__color-standard col-md-10">
+                    <div class="controls__stitle">Standard Colors</div>
+                    <div class="controls__color-palette">
+                      <div class="row">
+                        <div class="controls__color-palette-item col-md-2"
+                          style="background-color: rgb(246, 25, 34); height: 4em;"></div>
+                        <div class="controls__color-palette-item col-md-2"
+                          style="background-color: rgb(36, 141, 252); height: 4em;"></div>
+                        <div class="controls__color-palette-item col-md-2"
+                          style="background-color: rgb(41, 183, 132); height: 4em;"></div>
+                        <div class="controls__color-palette-item col-md-2"
+                          style="background-color: rgb(252, 116, 6); height: 4em;"></div>
+                        <div class="controls__color-palette-item col-md-2"
+                          style="background-color: rgb(240, 198, 0); height: 4em;"></div>
+                        <div class="controls__color-palette-item col-md-2"
+                          style="background-color: rgb(16, 16, 17); height: 4em;"></div>
+                        <div class="controls__color-palette-item col-md-2"
+                          style="background-color: rgb(214, 207, 191); height: 4em;"></div>
+                        <div class="controls__color-palette-item col-md-2"
+                          style="background-color: rgb(184, 182, 193); height: 4em;"></div>
+                        <div class="controls__color-palette-item col-md-2"
+                          style="background-color: rgb(108, 108, 108); height: 4em;"></div>
+                        <div class="controls__color-palette-item col-md-2"
+                          style="background-color: rgb(17, 103, 152); height: 4em;"></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <input type="number" id="logoSizingLength" class="form-control" aria-label="length" aria-describedby="basic-addon1">
               </div>
-            </div>
-            <div class="col-sm-4">
-              <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                  <span class="input-group-text" id="basic-addon1">Width</span>
-                </div>
-                <input type="number" id="logoSizingWidth" class="form-control" aria-label="width" aria-describedby="basic-addon1">
-              </div>
-            </div>
-            <div class="col-sm-2">
-              <button type="button" id="applyBtn" class="btn btn-primary"">Apply</button>
             </div>
           </div>
-          <hr>
-        </div>
-        
-        <div class="row mt-5">
-          <div id="decalPositionList">
+          <div class="card">
+            <div class="card-header" id="headingTwo">
+              <h5 class="mb-0">
+                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                  Materials
+                </button>
+              </h5>
+            </div>
+            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+              <div class="card-body">
+                <div class="controls-material-gallery col-md-12">
+                  <ul class="list-group">
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header" id="headingThree">
+              <h5 class="mb-0">
+                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                  Logos
+                </button>
+              </h5>
+            </div>
+            <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+              <div class="card-body">
+                <div class="row mt-5">
+                  <div class="controls-logo-gallery col-md-12">
+                    <div class="row">
+                    </div>
+                  </div>    
+                </div>
+                <div class="row mt-5">
+                  <div id="decalPositionList">
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
