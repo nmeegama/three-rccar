@@ -1,6 +1,6 @@
 let scene, camera, renderer, raycaster;
 
-const currVersion = 'v0.0.0.1';
+const currVersion = 'v0.0.0.2';
 
 const container = $('#car');
 const decalListContainer = document.getElementById('decalPositionList');
@@ -20,8 +20,8 @@ const logos = [
     'Fiberwerx Silver.png'
 ];
 const car = {
-    model: "3d-assets/new_object_update9.obj",
-    material: '3d-assets/new_object_update9.mtl',
+    model: "3d-assets/new_object_update11.obj",
+    material: '3d-assets/new_object_update11.mtl',
     object: null,
     color: new THREE.Color('rgb(246, 25, 34)'),
     decals: [],
@@ -43,7 +43,9 @@ const currentDecal = {
 let decalPositions = {
     'test.png': [
         {
+            id: '',
             meshName: '',
+            size: {length: 0, width: 0},
             position: {
                 x: 0,
                 y: 0,
@@ -80,19 +82,19 @@ function createScene() {
 };
 
 function initLighting() {
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(0, 5, 0);
     scene.add(directionalLight);
 
-    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 2);
+    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight2.position.set(0, -5, 0);
     scene.add(directionalLight2);
 
-    const directionalLight3 = new THREE.DirectionalLight(0xffffff, 2);
+    const directionalLight3 = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight3.position.set(6, -1, 0);
     scene.add(directionalLight3);
 
-    const directionalLight4 = new THREE.DirectionalLight(0xffffff, 2);
+    const directionalLight4 = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight4.position.set(-6, -1, 0);
     scene.add(directionalLight4);
 
@@ -160,7 +162,7 @@ function loadObject() {
             setMaterial('Tires');
             setMaterial('misc');
             setMaterial('grill');
-            changeVehicleColor(new THREE.Color('rgb(214, 207, 191)'));
+            changeVehicleColor(new THREE.Color('rgb(246, 25, 34)'));
             
             addEventListeners();
 
@@ -179,7 +181,7 @@ function getMaterialMappings(mesh) {
     for (const childMesh of mesh.children) {
         if (childMesh.material && childMesh.material.name) {
 
-            if (['C'].indexOf(childMesh.material.name) != -1) {
+            if (['Default'].indexOf(childMesh.material.name) != -1) {
                 bodyMeshes.push(childMesh);
             }
 
@@ -351,16 +353,21 @@ function addDecalToList(id, meshName, position, rotation) {
         decalPositions[currentDecal.src] = [];
     }
 
-    decalPositions[currentDecal.src].push({
+    const positionItem = {
         id,
         meshName,
+        size: {length: 1, width: 1},
         position: {x: position.x, y: position.y, z: position.z},
         rotation: {x: rotation.x, y: rotation.y, z: rotation.z}
-    });
+    };
+
+    decalPositions[currentDecal.src].push(positionItem);
+
+    loadSizing(positionItem);
 
     saveDecalPos();
 
-    addListItem(id, `mesh: ${meshName} x: ${Math.floor(position.x)} y: ${Math.floor(position.z)} z: ${Math.floor(position.z)}`);
+    addListItem(id, `mesh: ${meshName} x: ${Math.floor(position.x)} y: ${Math.floor(position.z)} z: ${Math.floor(position.z)}`, {length: 1, width: 1});
 }
 
 function addDecal(mesh, position, rotation, size, material) {
@@ -369,8 +376,56 @@ function addDecal(mesh, position, rotation, size, material) {
     return decal;
 }
 
+function applySizes(id, length, width) {
+    if (decalPositions[currentDecal.src]) {
+        const decalItem = _.find(decalPositions[currentDecal.src], {id});
+        if (decalItem) {
+            decalItem.size = {length, width};
+            loadDecalList();
+        }
+    }
+    saveDecalPos();
+}
+
+function loadSizing(decalPosition) {
+    let sizes = { length: 1, width: 1 };
+    if (decalPosition && decalPosition.size) {
+        sizes = decalPosition.size;
+    }
+
+    $('#logoSizingLength').val(sizes.length);
+    $('#logoSizingWidth').val(sizes.width);
+}
+
+/* function loadDecalList() {
+    $(decalListContainer).empty();
+    displayedDecals.forEach(decal => scene.remove(decal));
+    displayedDecals = [];
+
+    if (decalPositions[currentDecal.src] && decalPositions[currentDecal.src].positions) {
+        const sizing = currentDecal.sizing;
+        const size = new THREE.Vector3(sizing.length, sizing.width, 1);
+        const material = currentDecal.material.clone();
+        const currDecalPositions = decalPositions[currentDecal.src];
+
+        (currDecalPositions || []).forEach(positionItem => {
+
+            const { id, meshName, position, rotation } = positionItem;
+
+            const decalPosition = new THREE.Vector3(position.x, position.y, position.z);
+            const decalRotation = new THREE.Euler( rotation.x, rotation.y, rotation.z, 'XYZ');
+
+            const decal = addDecal(scene.getObjectByName(meshName), decalPosition, decalRotation, size, material);
+            decal.id = id;
+
+            displayedDecals.push(decal);
+
+            addListItem(id, `mesh: ${meshName} x: ${Math.floor(position.x)} y: ${Math.floor(position.y)} z: ${Math.floor(position.z)}`);
+        });
+    }
+} */
+
 function loadDecalList() {
-    const size = new THREE.Vector3(1, 1, 1);
     const material = currentDecal.material.clone();
     $(decalListContainer).empty();
     displayedDecals.forEach(decal => scene.remove(decal));
@@ -378,17 +433,23 @@ function loadDecalList() {
 
     (decalPositions[currentDecal.src] || []).forEach(positionItem => {
 
-        const { id, meshName, position, rotation } = positionItem;
+        const { id, size, meshName, position, rotation } = positionItem;
+
+        loadSizing(size);
 
         const decalPosition = new THREE.Vector3(position.x, position.y, position.z);
         const decalRotation = new THREE.Euler( rotation.x, rotation.y, rotation.z, 'XYZ');
 
-        const decal = addDecal(scene.getObjectByName(meshName), decalPosition, decalRotation, size, material);
-        decal.id = id;
+        const sizeVector = new THREE.Vector3(size.length, size.width, 1);
+
+        const decal = addDecal(scene.getObjectByName(meshName), decalPosition, decalRotation, sizeVector, material);
+        decal.userData = {
+            uuid: id
+        }
 
         displayedDecals.push(decal);
 
-        addListItem(id, `mesh: ${meshName} x: ${Math.floor(position.x)} y: ${Math.floor(position.y)} z: ${Math.floor(position.z)}`);
+        addListItem(id, `mesh: ${meshName} x: ${Math.floor(position.x)} y: ${Math.floor(position.y)} z: ${Math.floor(position.z)}`, size);
     });
 }
 
@@ -399,21 +460,17 @@ function resetActivePosListItem() {
 function removePosItem(id, node) {
     _.remove(decalPositions[currentDecal.src], {id});
     saveDecalPos();
-    const decalMesh = scene.getObjectById(id);
+    const decalMesh = scene.getObjectByCustomUUID(id);
     scene.remove(decalMesh);
     _.remove(displayedDecals, decalMesh);
     $(node).remove();
 }
 
-function addListItem(id, content) {
+/* function addListItem(id, content, size) {
     const node = document.createElement("LI");
     node.innerHTML = content;
     node.classList.add("list-group-item");
     node.classList.add("position-item");
-    node.onclick = () => {
-        resetActivePosListItem();
-        node.classList.add("active");
-    }
     const button = document.createElement("BUTTON");
     button.classList.add("btn");
     button.classList.add("btn-danger");
@@ -422,7 +479,55 @@ function addListItem(id, content) {
         removePosItem(id, node);
     }
     node.appendChild(button);
+    node.appendChild(getSizingContainer(size, id));
     decalListContainer.appendChild(node);
+} */
+
+function addListItem(id, content, size) {
+    const posBodyItemId = `r${Math.random().toString(36).substring(7)}`;
+    const posListItem = $('#decalListItemDummy').clone();
+    posListItem.removeAttr('id');
+    const decalItemBtn = $(posListItem).find('#decalItemBtn');
+    decalItemBtn.html(content);
+    decalItemBtn.attr('data-target', `#${posBodyItemId}`);
+
+    const decalItemBody = $(posListItem).find('.decal-item-body');
+    decalItemBody.attr('id', `${posBodyItemId}`);
+
+    const decalItemDelBtn = $(posListItem).find('#decalItemDelBtn');
+    $(decalItemDelBtn).on('click', () => {
+        removePosItem(id, $(posListItem).get(0));
+    });
+
+    const lengthId = `logoSizingLength${id}`;
+    const widthId = `logoSizingWidth${id}`;
+    const lengthInput = $(posListItem).find('#logoSizingLength');
+    const widthInput = $(posListItem).find('#logoSizingWidth');
+    lengthInput.attr('id', lengthId);
+    lengthInput.val(size.length);
+    widthInput.attr('id', widthId);
+    widthInput.val(size.width);
+    $(posListItem).find('#applyBtn').on('click', () => {
+        applySizes(id, lengthInput.val(), widthInput.val());
+    });
+
+    $('#decalPositionList').append(posListItem);
+}
+
+function getSizingContainer(size, id) {
+    const sizingContainer = $('.logo-sizing-container').clone();
+    const lengthId = `logoSizingLength${id}`;
+    const widthId = `logoSizingWidth${id}`;
+    const lengthInput = $(sizingContainer).find('#logoSizingLength');
+    lengthInput.attr('id', lengthId);
+    lengthInput.val(size.length);
+    const widthInput = $(sizingContainer).find('#logoSizingWidth');
+    widthInput.attr('id', widthId);
+    widthInput.val(size.width);
+    $(sizingContainer).find('#applyBtn').on('click', () => {
+        applySizes(id, lengthInput.val(), widthInput.val());
+    });
+    return sizingContainer.get(0);
 }
 
 function addEventListeners() {
@@ -434,6 +539,7 @@ function addEventListeners() {
             currentDecal.src = $(this).find('img').attr("src");
             currentDecal.material = getDecalMaterial(currentDecal.src);
             currentDecal.status = true;
+            // loadSizing();
             loadDecalList();
             $(this).css('border-color', 'blue');
         } else {
@@ -469,6 +575,7 @@ function addEventListeners() {
 
             // Logo size scaling
             const size = new THREE.Vector3(1, 1, 1);
+            // const size = new THREE.Vector3(sizing.length, sizing.width, 1);
 
             // const material = decal.material.clone();
 
@@ -478,18 +585,24 @@ function addEventListeners() {
 
             // const id = `${meshName}${position.x}${position.y}${position.z}`;
 
+            const uuid = uuidv4();
+
             const m = new THREE.Mesh(new THREE.DecalGeometry(object, point, orientationHelper.rotation, size), material);
+            m.userData = {
+                uuid
+            }
             scene.add(m);
 
             displayedDecals.push(m);
 
-            addDecalToList(m.id, object.name, point, orientationHelper.rotation);
+            addDecalToList(uuid, object.name, point, orientationHelper.rotation);
         }
     });
 };
 
 function init() {
     clearOnNewRelease();
+    addCustomPrototypeFuncs();
 
     raycaster = new THREE.Raycaster();
     scene = createScene();
@@ -513,6 +626,31 @@ function init() {
     loadDecalPos();
 }
 
+function addCustomPrototypeFuncs() {
+    THREE.Object3D.prototype.getObjectByCustomUUID = function ( value ) {
+        
+        console.log(this.userData.uuid);
+
+        if ( this.userData.uuid === value ) return this;
+        
+        for ( let i = 0, l = this.children.length; i < l; i ++ ) {
+    
+            const child = this.children[ i ];
+            const object = child.getObjectByCustomUUID( value );
+    
+            if ( object !== undefined ) {
+    
+                return object;
+    
+            }
+    
+        }
+        
+        return undefined;
+    
+    }
+}
+
 function loadDecalPos() {
     const pos = localStorage.getItem('decalPositions');
     if (pos) {
@@ -531,6 +669,13 @@ function clearOnNewRelease() {
         localStorage.setItem('version', currVersion);
     }
 }
+
+function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
 
 $(function () {
     init();

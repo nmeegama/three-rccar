@@ -36,12 +36,85 @@
             </div>
           </div>    
         </div>
+        
+        <div class="mt-5 d-none">
+          <hr>
+          <div class="row logo-sizing-container">
+            <div class="col-sm-2">
+              <p class="h6">Sizing :</p>
+            </div>
+            <div class="col-sm-4">
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="basic-addon1">Length</span>
+                </div>
+                <input type="number" id="logoSizingLength" class="form-control" aria-label="length" aria-describedby="basic-addon1">
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="basic-addon1">Width</span>
+                </div>
+                <input type="number" id="logoSizingWidth" class="form-control" aria-label="width" aria-describedby="basic-addon1">
+              </div>
+            </div>
+            <div class="col-sm-2">
+              <button type="button" id="applyBtn" class="btn btn-primary"">Apply</button>
+            </div>
+          </div>
+          <hr>
+        </div>
+        
         <div class="row mt-5">
-          <ul class="list-group decal-position-list" id="decalPositionList">
-          </ul>
+          <div id="decalPositionList">
+          </div>
+        </div>
+
+        <div class="d-none">
+          <div class="card" id="decalListItemDummy">
+            <div class="card-header" id="headingOne">
+              <h5 class="mb-0">
+                <button class="btn btn-link" id="decalItemBtn" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  Name
+                </button>
+              </h5>
+            </div>
+        
+            <div id="collapseOne" class="collapse decal-item-body" aria-labelledby="headingOne" data-parent="#decalPositionList">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-sm-2">
+                    <p class="h6">Size:</p>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="input-group mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">Length</span>
+                      </div>
+                      <input type="number" id="logoSizingLength" class="form-control" aria-label="length" aria-describedby="basic-addon1">
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="input-group mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">Width</span>
+                      </div>
+                      <input type="number" id="logoSizingWidth" class="form-control" aria-label="width" aria-describedby="basic-addon1">
+                    </div>
+                  </div>
+                  <div class="col-sm-2">
+                    <button type="button" id="applyBtn" class="btn btn-primary">Apply</button>
+                  </div>
+                </div>
+                <button type="button" id="decalItemDelBtn" class="btn btn-danger">Delete</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+  </div>
     
     <!-- <script src="js/vendor/modernizr-3.11.2.min.js"></script> -->
     <script src="js/vendor/three/build/three.js"></script>

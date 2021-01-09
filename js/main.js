@@ -1,6 +1,6 @@
 let scene, camera, renderer, raycaster, colladaDownloadLink;
 
-const currVersion = 'v0.0.0.1';
+const currVersion = 'v0.0.0.2';
 
 const container = $('#car');
 const logos = [
@@ -43,12 +43,13 @@ const car = {
             rotation: new THREE.Euler( 0, 1.5707963267948966, 0, 'XYZ' )
         }
     ] */
-    decalPositions: {"test.png":[{"meshName":"","position":{"x":0,"y":0,"z":0},"rotation":{"x":0,"y":0,"z":0}}]}
+    decalPositions: {"test.png":[{"id": "", "size": {}, "meshName":"","position":{"x":0,"y":0,"z":0},"rotation":{"x":0,"y":0,"z":0}}]}
 };
 const currentDecal = {
     src: '',
     material: null,
-    status: false
+    status: false,
+    sizing: null
 };
 
 let materials = {};
@@ -398,11 +399,14 @@ function addAllowedLocations() {
     if (car.decalPositions[currentDecal.src]) {
         currentDecal.allowedLocations = [];
 
-        const size = new THREE.Vector3(1, 1, 1);
         const material = currentDecal.material.clone();
         material.emissive.setHex(0xff0000);
         
         decalPositions.forEach(positionItem => {
+
+            const sizing = positionItem.size || {length: 1, width: 1};
+
+            const size = new THREE.Vector3(Number(sizing.length), Number(sizing.width), 1);
 
             const position = new THREE.Vector3(positionItem.position.x, positionItem.position.y, positionItem.position.z);
             const rotation = new THREE.Euler( positionItem.rotation.x, positionItem.rotation.y, positionItem.rotation.z, 'XYZ');
@@ -411,7 +415,7 @@ function addAllowedLocations() {
                 const decal = addDecal(scene.getObjectByName(positionItem.meshName), position, rotation, size, material);
                 decal.userData.id = positionItem.id;
                 // decal.visible = false;
-                currentDecal.allowedLocations.push(decal); 
+                currentDecal.allowedLocations.push(decal);
             }
         });
     }
