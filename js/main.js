@@ -1,6 +1,6 @@
 let scene, camera, renderer, raycaster, colladaDownloadLink;
 
-const currVersion = 'v0.0.0.2';
+const currVersion = 'v0.0.0.3';
 
 const container = $('#car');
 const logos = [
@@ -383,15 +383,32 @@ function addDecal(mesh, position, rotation, size, material) {
     return decal;
 }
 
+function createDecal(mesh, position, rotation, size, material) {
+    const decal = new THREE.Mesh(new THREE.DecalGeometry(mesh, position, rotation, size), material);
+    return decal;
+}
+
 function addAllowedLocations() {
     const decalPositions = car.decalPositions[currentDecal.src];
 
     if (car.decalPositions[currentDecal.src]) {
         currentDecal.allowedLocations = [];
 
-        const material = currentDecal.material.clone();
-        material.emissive.setHex(0xff0000);
-        
+        /* const material = currentDecal.material.clone();
+        material.emissive.setHex(0xff0000); */
+        const material = new THREE.MeshStandardMaterial({
+            side: THREE.FrontSide,
+            specular: 0x444444,
+            normalScale: new THREE.Vector2(1, 1),
+            shininess: 30,
+            transparent: true,
+            depthTest: true,
+            depthWrite: false,
+            polygonOffset: true,
+            polygonOffsetFactor: - 4,
+            wireframe: false,
+        });
+
         decalPositions.forEach(positionItem => {
 
             const sizing = positionItem.size || {length: 1, width: 1};
@@ -401,14 +418,41 @@ function addAllowedLocations() {
             const position = new THREE.Vector3(positionItem.position.x, positionItem.position.y, positionItem.position.z);
             const rotation = new THREE.Euler( positionItem.rotation.x, positionItem.rotation.y, positionItem.rotation.z, 'XYZ');
 
-            if (!car.decals || !_.find(car.decals, {id: positionItem.id})) {          
-                const decal = addDecal(scene.getObjectByName(positionItem.meshName), position, rotation, size, material);
-                decal.userData.id = positionItem.id;
-                // decal.visible = false;
-                currentDecal.allowedLocations.push(decal);
+            const decal = createDecal(scene.getObjectByName(positionItem.meshName), position, rotation, size, material);
+            decal.userData.id = positionItem.id;
+            // decal.visible = false;
+            currentDecal.allowedLocations.push(decal);
+
+            if (!checkForOverlappingDecals(decal)) {
+                scene.add(decal);         
             }
         });
     }
+}
+
+function checkForOverlappingDecals(decal1) {
+    const box1 = new THREE.Box3();
+    decal1.geometry.computeBoundingBox();
+    box1.copy( decal1.geometry.boundingBox ).applyMatrix4( decal1.matrixWorld );
+    for(const existingDecal of (car.decals || [])) {
+        const decal2 = existingDecal.decal;
+        const box2 = new THREE.Box3();
+        decal2.geometry.computeBoundingBox();
+        box2.copy( decal2.geometry.boundingBox ).applyMatrix4( decal2.matrixWorld );
+        if (box1.intersectsBox(box2)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function refreshDecalPlaceholders() {
+    (currentDecal.allowedLocations || []).forEach(decal => {
+        scene.remove(decal);
+    });
+    currentDecal.allowedLocations = [];
+    addAllowedLocations();
 }
 
 function resetDecalSelector() {
@@ -512,6 +556,8 @@ function addEventListeners() {
                 decal: m
             });
 
+            refreshDecalPlaceholders();
+
             clearMeshHighlights();
         }
     });
@@ -590,16 +636,22 @@ function exportCollada() {
     colladaDownloadLink.style.display = 'none';
     document.body.appendChild(colladaDownloadLink);
 
+    const results = [];
+
     const exporter = new THREE.ColladaExporter();
 
-    // Parse the input and generate the ply output
-    const result = exporter.parse( car.object );
+    for (const mesh of [car.object, /* ...car.decals.map(decalObj => decalObj.decal) */]) {
+        // Parse the input and generate the ply output
+        const result = exporter.parse( mesh );
 
-    download(new Blob( [ result.data ], { type: 'text/plain' } ), 'test-collada.dae');
+        /* result.textures.forEach( tex => {
+            download( new Blob( [ tex.data ], { type: 'application/octet-stream' } ), `${ tex.name }.${ tex.ext }` );
+        } ); */
 
-    result.textures.forEach( tex => {
-        download( new Blob( [ tex.data ], { type: 'application/octet-stream' } ), `${ tex.name }.${ tex.ext }` );
-    } );
+        results.push(result.data);
+    }
+
+    download(new Blob( [ ...results ], { type: 'text/plain' } ), 'test-collada.dae');
 }
 
 function loadDecalPos() {

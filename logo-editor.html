@@ -139,30 +139,69 @@
             <div id="collapseOne" class="collapse decal-item-body" aria-labelledby="headingOne" data-parent="#decalPositionList">
               <div class="card-body">
                 <div class="row">
-                  <div class="col-sm-2">
+                  <div class="col-md-2 col-sm-12">
                     <p class="h6">Size:</p>
                   </div>
-                  <div class="col-sm-4">
+                  <div class="col-md-5 col-sm-12">
                     <div class="input-group mb-3">
                       <div class="input-group-prepend">
                         <span class="input-group-text" id="basic-addon1">Length</span>
                       </div>
-                      <input type="number" id="logoSizingLength" class="form-control" aria-label="length" aria-describedby="basic-addon1">
+                      <input type="number" id="logoSizingLength" class="form-control" step="0.1" value="0.0" min="0" aria-label="length" aria-describedby="basic-addon1">
                     </div>
                   </div>
-                  <div class="col-sm-4">
+                  <div class="col-md-5 col-sm-12">
                     <div class="input-group mb-3">
                       <div class="input-group-prepend">
                         <span class="input-group-text" id="basic-addon1">Width</span>
                       </div>
-                      <input type="number" id="logoSizingWidth" class="form-control" aria-label="width" aria-describedby="basic-addon1">
+                      <input type="number" id="logoSizingWidth" class="form-control" step="0.1" value="0.0" min="0" aria-label="width" aria-describedby="basic-addon1">
                     </div>
                   </div>
-                  <div class="col-sm-2">
+                  <!-- <div class="col-sm-2">
+                    <button type="button" id="applyBtn" class="btn btn-primary">Apply</button>
+                  </div> -->
+                </div>
+                <div class="row">
+                  <div class="col-sm-12">
+                    <p class="h6">Position:</p>
+                  </div>
+                  <div class="col-sm-12">
+                    <div class="input-group mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">x</span>
+                      </div>
+                      <input type="number" id="logoPosX" class="form-control" step="0.001" value="0.0" aria-label="x" aria-describedby="basic-addon1">
+                    </div>
+                  </div>
+                  <div class="col-sm-12">
+                    <div class="input-group mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">y</span>
+                      </div>
+                      <input type="number" id="logoPosY" class="form-control" step="0.001" value="0.0" aria-label="y" aria-describedby="basic-addon1">
+                    </div>
+                  </div>
+                  <div class="col-sm-12">
+                    <div class="input-group mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">z</span>
+                      </div>
+                      <input type="number" id="logoPosZ" class="form-control" step="0.001" value="0.0" aria-label="z" aria-describedby="basic-addon1">
+                    </div>
+                  </div>
+                  <!-- <div class="col-sm-3">
+                    <button type="button" id="applyBtn" class="btn btn-primary">Apply</button>
+                  </div> -->
+                </div>
+                <div class="row">
+                  <div class="col-sm-6">
                     <button type="button" id="applyBtn" class="btn btn-primary">Apply</button>
                   </div>
+                  <div class="col-sm-6">
+                    <button type="button" id="decalItemDelBtn" class="btn btn-danger">Delete</button>
+                  </div>
                 </div>
-                <button type="button" id="decalItemDelBtn" class="btn btn-danger">Delete</button>
               </div>
             </div>
           </div>

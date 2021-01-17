@@ -1,6 +1,6 @@
 let scene, camera, renderer, raycaster;
 
-const currVersion = 'v0.0.0.2';
+const currVersion = 'v0.0.0.3';
 
 const container = $('#car');
 const decalListContainer = document.getElementById('decalPositionList');
@@ -363,67 +363,41 @@ function addDecalToList(id, meshName, position, rotation) {
 
     decalPositions[currentDecal.src].push(positionItem);
 
-    loadSizing(positionItem);
-
     saveDecalPos();
 
-    addListItem(id, `mesh: ${meshName} x: ${Math.floor(position.x)} y: ${Math.floor(position.z)} z: ${Math.floor(position.z)}`, {length: 1, width: 1});
+    const header = `mesh: ${meshName} x: ${Math.floor(position.x)} y: ${Math.floor(position.z)} z: ${Math.floor(position.z)}`;
+
+    addListItem(id, header, {length: 1, width: 1}, position);
 }
 
-function addDecal(mesh, position, rotation, size, material) {
+function addDecal(id, mesh, position, rotation, size, material) {
     const decal = new THREE.Mesh(new THREE.DecalGeometry(mesh, position, rotation, size), material);
+    decal.userData = {
+        uuid: id
+    }
     scene.add(decal);
     return decal;
 }
 
-function applySizes(id, length, width) {
+function updateDecalProperties(id, size, position) {
     if (decalPositions[currentDecal.src]) {
         const decalItem = _.find(decalPositions[currentDecal.src], {id});
+        const decalMesh = scene.getObjectByCustomUUID(id);
         if (decalItem) {
-            decalItem.size = {length, width};
-            loadDecalList();
+            decalItem.size = size;
+            decalItem.position = position;
+            decalMesh.geometry.dispose();
+
+            const { meshName, rotation } = decalItem;
+            const decalPosition = new THREE.Vector3(position.x, position.y, position.z);
+            const decalRotation = new THREE.Euler( rotation.x, rotation.y, rotation.z, 'XYZ');
+            const sizeVector = new THREE.Vector3(size.length, size.width, 1);
+            const decalGeometry = new THREE.DecalGeometry(scene.getObjectByName(meshName), decalPosition, decalRotation, sizeVector);
+            decalMesh.geometry = decalGeometry;
         }
     }
     saveDecalPos();
 }
-
-function loadSizing(decalPosition) {
-    let sizes = { length: 1, width: 1 };
-    if (decalPosition && decalPosition.size) {
-        sizes = decalPosition.size;
-    }
-
-    $('#logoSizingLength').val(sizes.length);
-    $('#logoSizingWidth').val(sizes.width);
-}
-
-/* function loadDecalList() {
-    $(decalListContainer).empty();
-    displayedDecals.forEach(decal => scene.remove(decal));
-    displayedDecals = [];
-
-    if (decalPositions[currentDecal.src] && decalPositions[currentDecal.src].positions) {
-        const sizing = currentDecal.sizing;
-        const size = new THREE.Vector3(sizing.length, sizing.width, 1);
-        const material = currentDecal.material.clone();
-        const currDecalPositions = decalPositions[currentDecal.src];
-
-        (currDecalPositions || []).forEach(positionItem => {
-
-            const { id, meshName, position, rotation } = positionItem;
-
-            const decalPosition = new THREE.Vector3(position.x, position.y, position.z);
-            const decalRotation = new THREE.Euler( rotation.x, rotation.y, rotation.z, 'XYZ');
-
-            const decal = addDecal(scene.getObjectByName(meshName), decalPosition, decalRotation, size, material);
-            decal.id = id;
-
-            displayedDecals.push(decal);
-
-            addListItem(id, `mesh: ${meshName} x: ${Math.floor(position.x)} y: ${Math.floor(position.y)} z: ${Math.floor(position.z)}`);
-        });
-    }
-} */
 
 function loadDecalList() {
     const material = currentDecal.material.clone();
@@ -435,21 +409,18 @@ function loadDecalList() {
 
         const { id, size, meshName, position, rotation } = positionItem;
 
-        loadSizing(size);
-
         const decalPosition = new THREE.Vector3(position.x, position.y, position.z);
         const decalRotation = new THREE.Euler( rotation.x, rotation.y, rotation.z, 'XYZ');
 
         const sizeVector = new THREE.Vector3(size.length, size.width, 1);
 
-        const decal = addDecal(scene.getObjectByName(meshName), decalPosition, decalRotation, sizeVector, material);
-        decal.userData = {
-            uuid: id
-        }
+        const decal = addDecal(id, scene.getObjectByName(meshName), decalPosition, decalRotation, sizeVector, material);
 
         displayedDecals.push(decal);
 
-        addListItem(id, `mesh: ${meshName} x: ${Math.floor(position.x)} y: ${Math.floor(position.y)} z: ${Math.floor(position.z)}`, size);
+        const header = `mesh: ${meshName} x: ${Math.floor(position.x)} y: ${Math.floor(position.y)} z: ${Math.floor(position.z)}`;
+
+        addListItem(id, header, size, position);
     });
 }
 
@@ -482,8 +453,8 @@ function removePosItem(id, node) {
     node.appendChild(getSizingContainer(size, id));
     decalListContainer.appendChild(node);
 } */
+function addListItem(id, content, size, position) {
 
-function addListItem(id, content, size) {
     const posBodyItemId = `r${Math.random().toString(36).substring(7)}`;
     const posListItem = $('#decalListItemDummy').clone();
     posListItem.removeAttr('id');
@@ -499,6 +470,7 @@ function addListItem(id, content, size) {
         removePosItem(id, $(posListItem).get(0));
     });
 
+    /** Set sizing data */
     const lengthId = `logoSizingLength${id}`;
     const widthId = `logoSizingWidth${id}`;
     const lengthInput = $(posListItem).find('#logoSizingLength');
@@ -507,8 +479,27 @@ function addListItem(id, content, size) {
     lengthInput.val(size.length);
     widthInput.attr('id', widthId);
     widthInput.val(size.width);
+    /** Sizing data end */
+
+    /** Set position data */
+    const xId = `logoPosX${id}`;
+    const yId = `logoPosY${id}`;
+    const zId = `logoPosZ${id}`;
+    const xInput = $(posListItem).find('#logoPosX');
+    const yInput = $(posListItem).find('#logoPosY');
+    const zInput = $(posListItem).find('#logoPosZ');
+    xInput.attr('id', xId);
+    xInput.val(position.x);
+    yInput.attr('id', yId);
+    yInput.val(position.y);
+    zInput.attr('id', zId);
+    zInput.val(position.z);
+    /** Position data end */
+
     $(posListItem).find('#applyBtn').on('click', () => {
-        applySizes(id, lengthInput.val(), widthInput.val());
+        const size = {length: Number(lengthInput.val()), width: Number(widthInput.val())};
+        const position = {x: Number(xInput.val()), y: Number(yInput.val()), z: Number(zInput.val())};
+        updateDecalProperties(id, size, position);
     });
 
     $('#decalPositionList').append(posListItem);
@@ -524,8 +515,9 @@ function getSizingContainer(size, id) {
     const widthInput = $(sizingContainer).find('#logoSizingWidth');
     widthInput.attr('id', widthId);
     widthInput.val(size.width);
+
     $(sizingContainer).find('#applyBtn').on('click', () => {
-        applySizes(id, lengthInput.val(), widthInput.val());
+        // applySizes(id, lengthInput.val(), widthInput.val());
     });
     return sizingContainer.get(0);
 }
