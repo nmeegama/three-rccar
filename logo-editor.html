@@ -39,7 +39,7 @@
                 </button>
               </h5>
             </div>
-        
+
             <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
               <div class="card-body">
                 <div class="row">
@@ -52,7 +52,7 @@
                       </div>
                     </div>
                   </div>
-        
+
                   <div class="controls__color-standard col-md-10">
                     <div class="controls__stitle">Standard Colors</div>
                     <div class="controls__color-palette">
@@ -115,7 +115,7 @@
                   <div class="controls-logo-gallery col-md-12">
                     <div class="row">
                     </div>
-                  </div>    
+                  </div>
                 </div>
                 <div class="row mt-5">
                   <div id="decalPositionList">
@@ -135,7 +135,7 @@
                 </button>
               </h5>
             </div>
-        
+
             <div id="collapseOne" class="collapse decal-item-body" aria-labelledby="headingOne" data-parent="#decalPositionList">
               <div class="card-body">
                 <div class="row">
@@ -156,6 +156,30 @@
                         <span class="input-group-text" id="basic-addon1">Width</span>
                       </div>
                       <input type="number" id="logoSizingWidth" class="form-control" step="0.1" value="0.0" min="0" aria-label="width" aria-describedby="basic-addon1">
+                    </div>
+                  </div>
+                  <!-- <div class="col-sm-2">
+                    <button type="button" id="applyBtn" class="btn btn-primary">Apply</button>
+                  </div> -->
+                </div>
+                <div class="row">
+                  <div class="col-md-2 col-sm-12">
+                    <p class="h6">Actual Size:</p>
+                  </div>
+                  <div class="col-md-5 col-sm-12">
+                    <div class="input-group mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">Height</span>
+                      </div>
+                      <input type="number" id="logoActSizingHeight" class="form-control" step="0.1" value="0.0" min="0" aria-label="length" aria-describedby="basic-addon1">
+                    </div>
+                  </div>
+                  <div class="col-md-5 col-sm-12">
+                    <div class="input-group mb-3">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">Width</span>
+                      </div>
+                      <input type="number" id="logoActSizingWidth" class="form-control" step="0.1" value="0.0" min="0" aria-label="width" aria-describedby="basic-addon1">
                     </div>
                   </div>
                   <!-- <div class="col-sm-2">
@@ -195,6 +219,14 @@
                   </div> -->
                 </div>
                 <div class="row">
+                  <div class="col-md-4 col-sm-12">
+                    <p class="h6">Actual Rotation:</p>
+                  </div>
+                  <div class="col-md-7 col-sm-12">
+                    <input type="number" id="logoActRotation" class="form-control" step="0.1" value="0.0" aria-label="length" aria-describedby="basic-addon1">
+                  </div>
+                </div>
+                <div class="row">
                   <div class="col-sm-6">
                     <button type="button" id="applyBtn" class="btn btn-primary">Apply</button>
                   </div>
@@ -209,7 +241,7 @@
       </div>
     </div>
   </div>
-    
+
     <!-- <script src="js/vendor/modernizr-3.11.2.min.js"></script> -->
     <script src="js/vendor/three/build/three.js"></script>
     <script src="js/vendor/three/examples/js/controls/OrbitControls.js"></script>

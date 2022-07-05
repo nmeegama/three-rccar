@@ -65,7 +65,9 @@ let decalPositions = {
                 x: 0,
                 y: 0,
                 z: 0
-            }
+            },
+            uv: new THREE.Vector2(),
+            actualSize: {height: 0, width: 0}
         }
     ]
 };
@@ -141,16 +143,6 @@ function animate() {
     render();
 };
 
-/* function loadObject() {
-    // Using the three oBjectLOader to load the 3d json file
-    const objectLoader = new THREE.ObjectLoader();
-    objectLoader.load(car.model, function (obj) {
-        car.object = obj;
-        changeVehicleColor(car.color);
-        scene.add(obj);
-    });
-} */
-
 function loadObject() {
     const mtlLoader = new THREE.MTLLoader();
     const loader = new THREE.OBJLoader();
@@ -162,18 +154,20 @@ function loadObject() {
 
         loader.load(car.model, (obj) => {
             getMaterialMappings(obj);
-            initMaterials();
+            // initMaterials();
             car.object = obj;
             obj.position.y = -2;
             console.log(obj);
             scene.add(obj);
 
-            setMaterial('Default');
-            setMaterial('Tires');
-            setMaterial('misc');
-            setMaterial('grill');
+            console.log(obj);
+
+            // setMaterial('Default');
+            // setMaterial('Tires');
+            // setMaterial('misc');
+            // setMaterial('grill');
             changeVehicleColor(new THREE.Color('rgb(246, 25, 34)'));
-            
+
             addEventListeners();
 
         }, undefined, (error) => {
@@ -206,48 +200,6 @@ function getMaterialMappings(mesh) {
     }
 }
 
-/** TODO: REMOVE
- * When given a material name, looks for the meshes that uses the material and adds it
- * to the mesh
- * @param {*} name material name
- */
-function _setMaterial(name, updateColor = true) {
-    if (materials[name] && materialMap[name]) {
-        for (const objectId of materialMap[name]) {
-            const mesh = scene.getObjectById(objectId, true);
-
-            if (mesh.name === 'bodypanel52_bodypanel52_Default') {
-                console.log('gotcha');
-            }
-
-            // If this is the first time the material is assigned to mesh, assign a clone of the original material.
-            if (!mesh.material.map) {
-                mesh.material = materials[name];
-                if (updateColor) {
-                    mesh.material.color = car.color;
-                }
-            } else {
-                // If the mesh already has a copy of given material, toggle its visibility
-                mesh.material.visible = 1;
-            }
-        }
-    }
-}
-
-/* function hideMaterial(name) {
-    if (materials[name] && materialMap[name]) {
-        for (const objectId of materialMap[name]) {
-            const mesh = scene.getObjectById(objectId, true);
-
-            if (mesh.material) {
-                // mesh.material = materials['Default'].clone();
-                // mesh.material.color = car.color;
-                mesh.material.visible = 0;
-            }
-        }
-    }
-} */
-
 function hideMaterial(name) {
     if (materials[name]) {
         materials[name].visible = 0;
@@ -260,6 +212,7 @@ function hideMaterial(name) {
  */
 function initMaterials() {
     for (const key in materials) {
+        console.log(materials[key]);
         /* if (key !== 'Default') {
             materials[key].visible = 0;
             materials[key].color = null;
@@ -348,7 +301,7 @@ function getDecalMaterial(src) {
     });
 }
 
-function addDecalToList(id, meshName, position, rotation) {
+function addDecalToList(id, meshName, position, rotation, uv) {
     if (!decalPositions[currentDecal.src]) {
         decalPositions[currentDecal.src] = [];
     }
@@ -357,8 +310,11 @@ function addDecalToList(id, meshName, position, rotation) {
         id,
         meshName,
         size: {length: 1, width: 1},
+        actualSize: {height: 1, width: 1},
         position: {x: position.x, y: position.y, z: position.z},
-        rotation: {x: rotation.x, y: rotation.y, z: rotation.z}
+        rotation: {x: rotation.x, y: rotation.y, z: rotation.z},
+        uv,
+        actualRotation: 90
     };
 
     decalPositions[currentDecal.src].push(positionItem);
@@ -367,7 +323,7 @@ function addDecalToList(id, meshName, position, rotation) {
 
     const header = `mesh: ${meshName} x: ${Math.floor(position.x)} y: ${Math.floor(position.z)} z: ${Math.floor(position.z)}`;
 
-    addListItem(id, header, {length: 1, width: 1}, position);
+    addListItem(id, header, {length: 1, width: 1}, {height: 1, width: 1}, position, 90);
 }
 
 function addDecal(id, mesh, position, rotation, size, material) {
@@ -379,13 +335,15 @@ function addDecal(id, mesh, position, rotation, size, material) {
     return decal;
 }
 
-function updateDecalProperties(id, size, position) {
+function updateDecalProperties(id, size, position, actualSize, actualRotation) {
     if (decalPositions[currentDecal.src]) {
         const decalItem = _.find(decalPositions[currentDecal.src], {id});
         const decalMesh = scene.getObjectByCustomUUID(id);
         if (decalItem) {
             decalItem.size = size;
             decalItem.position = position;
+            decalItem.actualSize = actualSize;
+            decalItem.actualRotation = actualRotation;
             decalMesh.geometry.dispose();
 
             const { meshName, rotation } = decalItem;
@@ -407,7 +365,7 @@ function loadDecalList() {
 
     (decalPositions[currentDecal.src] || []).forEach(positionItem => {
 
-        const { id, size, meshName, position, rotation } = positionItem;
+        const { id, size, meshName, position, rotation, actualSize, actualRotation } = positionItem;
 
         const decalPosition = new THREE.Vector3(position.x, position.y, position.z);
         const decalRotation = new THREE.Euler( rotation.x, rotation.y, rotation.z, 'XYZ');
@@ -420,7 +378,7 @@ function loadDecalList() {
 
         const header = `mesh: ${meshName} x: ${Math.floor(position.x)} y: ${Math.floor(position.y)} z: ${Math.floor(position.z)}`;
 
-        addListItem(id, header, size, position);
+        addListItem(id, header, size, actualSize, position, actualRotation);
     });
 }
 
@@ -453,7 +411,7 @@ function removePosItem(id, node) {
     node.appendChild(getSizingContainer(size, id));
     decalListContainer.appendChild(node);
 } */
-function addListItem(id, content, size, position) {
+function addListItem(id, content, size, actualSize, position, actualRotation) {
 
     const posBodyItemId = `r${Math.random().toString(36).substring(7)}`;
     const posListItem = $('#decalListItemDummy').clone();
@@ -496,10 +454,30 @@ function addListItem(id, content, size, position) {
     zInput.val(position.z);
     /** Position data end */
 
+    /** Set actual sizing data */
+    const heightId = `logoActSizingHeight${id}`;
+    const aWidthId = `logoActSizingWidth${id}`;
+    const heightInput = $(posListItem).find('#logoActSizingHeight');
+    const aWidthInput = $(posListItem).find('#logoActSizingWidth');
+    heightInput.attr('id', heightId);
+    heightInput.val(actualSize.height);
+    aWidthInput.attr('id', aWidthId);
+    aWidthInput.val(actualSize.width);
+    /** Sizing data end */
+
+    /** Set actual rotation data */
+    const actRotationId = `logoActRotation${id}`;
+    const actRotationInput = $(posListItem).find('#logoActRotation');
+    actRotationInput.attr('id', actRotationId);
+    actRotationInput.val(actualRotation);
+    /** rotation data end */
+
     $(posListItem).find('#applyBtn').on('click', () => {
         const size = {length: Number(lengthInput.val()), width: Number(widthInput.val())};
         const position = {x: Number(xInput.val()), y: Number(yInput.val()), z: Number(zInput.val())};
-        updateDecalProperties(id, size, position);
+        const actualSize = {height: Number(heightInput.val()), width: Number(aWidthInput.val())};
+        const actualRotation = actRotationInput.val();
+        updateDecalProperties(id, size, position, actualSize, actualRotation);
     });
 
     $('#decalPositionList').append(posListItem);
@@ -573,7 +551,7 @@ function addEventListeners() {
     container.on("click", (event) => {
         if (currentDecal.status && car.highlighter.status) {
 
-            const { face, point, object } = car.highlighter.intersect;
+            const { face, point, object, uv } = car.highlighter.intersect;
 
             const normal = face.normal.clone();
             normal.transformDirection(object.matrixWorld);
@@ -606,7 +584,7 @@ function addEventListeners() {
 
             displayedDecals.push(m);
 
-            addDecalToList(uuid, object.name, point, orientationHelper.rotation);
+            addDecalToList(uuid, object.name, point, orientationHelper.rotation, uv);
         }
     });
 
@@ -620,6 +598,20 @@ function addEventListeners() {
         }
     });
 };
+
+function getDecalActualLocation(uv) {
+    const transformedUV = materials['A'].map.transformUv( uv );
+
+    const x = transformedUV.x * materials['A'].map.image.width;
+    const y = materials['A'].map.image.height * (1 - transformedUV.y);
+
+    return {x, y};
+
+    // console.log('Position of decal in the texture : ', posX, posY);
+}
+
+function getDecalActualSize(image, scale) {
+}
 
 function loadMaterialEls() {
     const folder = "3d-assets/pics/";
@@ -665,26 +657,26 @@ function init() {
 
 function addCustomPrototypeFuncs() {
     THREE.Object3D.prototype.getObjectByCustomUUID = function ( value ) {
-        
+
         console.log(this.userData.uuid);
 
         if ( this.userData.uuid === value ) return this;
-        
+
         for ( let i = 0, l = this.children.length; i < l; i ++ ) {
-    
+
             const child = this.children[ i ];
             const object = child.getObjectByCustomUUID( value );
-    
+
             if ( object !== undefined ) {
-    
+
                 return object;
-    
+
             }
-    
+
         }
-        
+
         return undefined;
-    
+
     }
 }
 
@@ -712,7 +704,7 @@ function uuidv4() {
       var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     });
-  }
+}
 
 $(function () {
     init();

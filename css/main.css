@@ -261,3 +261,18 @@ textarea {
   }
 }
 
+.image-container {
+  position: relative;
+}
+
+.export-material {
+  width: 100% !important;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+
+.export-decal {
+  position: absolute;
+}
+
